@@ -1,0 +1,9 @@
+version: "1.0.0"
+app:
+  name: REQ data management app
+  features:
+    - type: AppFeatureIntegration
+      name: REQ data management integration
+      build:
+        source: customUrl
+        sufix: "/monday"
