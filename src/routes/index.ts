@@ -1,4 +1,6 @@
 import express from 'express';
+import { createItems } from '../controllers/controller';
+
 const router = express();
 
 router.get('/', (req, res) => {
@@ -11,7 +13,7 @@ router.get('/health', (req, res) => {
 });
 
 router.post('/create-items', (req, res) => {
-  res.send('POST request to /create-items');
+  createItems(req, res);
 });
 
 function getHealth() {
