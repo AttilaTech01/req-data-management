@@ -1,15 +1,17 @@
 import express from 'express';
-const router = express.Router();
-import mondayRoutes from './monday';
+const router = express();
 
-router.use(mondayRoutes);
-router.get('/', function(req, res) {
+router.get('/', (req, res) => {
   res.json(getHealth());
 });
 
-router.get('/health', function(req, res) {
+router.get('/health', (req, res) => {
   res.json(getHealth());
   res.end();
+});
+
+router.post('/create-items', (req, res) => {
+  res.send('POST request to /create-items');
 });
 
 function getHealth() {
