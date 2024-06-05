@@ -11,6 +11,6 @@ const port = process.env.PORT;
 app.use(bodyParser.json());
 app.use(routes);
 
-app.listen(port, () => console.log(`Quickstart app listening at http://localhost:${port}`));
+app.listen(port, () => console.log(`REQ Data management API is listening at http://localhost:${port}`));
 
 export default app;
