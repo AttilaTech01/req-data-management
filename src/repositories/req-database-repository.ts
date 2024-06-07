@@ -8,7 +8,7 @@ class ReqDatabaseRepository {
       let connection = await mysql.createConnection({
         host: 'localhost',
         user: 'root',
-        password: 'MuffinUnPeu$ec3',
+        password: 'root',
         database: 'leads'
       });
 
