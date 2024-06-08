@@ -1,6 +1,6 @@
 import express from 'express';
-import { createItems, getAllItems } from '../controllers/controller';
-
+import { getAllItems, getVerifItems } from '../controllers/controller';
+//import { createItems, getAllItems } from '../controllers/controller';
 const router = express();
 
 // GET
@@ -17,10 +17,15 @@ router.get('/get-all-items', (req, res) => {
   getAllItems(req, res);
 });
 
-// POST
-router.post('/create-items', (req, res) => {
-  createItems(req, res);
+
+router.get('/get-verif-items', (req, res) => {
+  getVerifItems(req, res);
 });
+
+// POST
+//router.post('/create-items', (req, res) => {
+  //createItems(req, res);
+//});//
 
 // FUNCTIONS
 function getHealth() {

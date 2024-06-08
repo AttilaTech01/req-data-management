@@ -1,19 +1,37 @@
+import { json } from 'body-parser';
 import reqService from '../services/req-service';
 
-export async function createItems(req, res): Promise<void> {
+//export async function createItems(req, res): Promise<void> {
+ // try {
+    //await reqService.createItems("sectorFakeId", "mrcFakeId");
+   // return res.status(200).send({ message: 'items created successfuly' });
+ // } catch (err) {
+   // console.error(err);
+   // return res.status(500).send({ message: 'internal server error' });
+  //}
+//}
+
+
+
+
+
+export async function getAllItems(req, res): Promise<void> {
   try {
-    await reqService.createItems("sectorFakeId", "mrcFakeId");
-    return res.status(200).send({ message: 'items created successfuly' });
+    //console.log("ERequest : " + req);
+    const data = await reqService.getAllItems(req);
+    return res.status(200).send({ message: 'items fetched successfuly', data: data });
   } catch (err) {
     console.error(err);
     return res.status(500).send({ message: 'internal server error' });
   }
 }
 
-export async function getAllItems(req, res): Promise<void> {
+
+export async function getVerifItems(req, res): Promise<void> {
   try {
-    await reqService.getAllItems();
-    return res.status(200).send({ message: 'items fetched successfuly' });
+    //console.log("ERequest : " + req);
+    const data = await reqService.getVerifItems(req);
+    return res.status(200).send({ message: 'items fetched successfuly', data: data });
   } catch (err) {
     console.error(err);
     return res.status(500).send({ message: 'internal server error' });

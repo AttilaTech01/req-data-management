@@ -1,12 +1,12 @@
 import axios from 'axios';
 
 class MondayRepository {
-    static async createItem(boardId: number, itemName: string): Promise<boolean> {
+    static async createItem(item): Promise<boolean> {
       await axios({
         url: 'https://api.monday.com/v2',
         method: 'post',
         headers: {
-          Authorization: process.env.MONDAY_ACCESS_TOKEN
+          Authorization: "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
         },
         data: {
           query: `
@@ -17,8 +17,8 @@ class MondayRepository {
             }
           `,
           variables: {
-            boardId: boardId,
-            itemName: itemName
+            //boardId: item.nom,
+            itemName: item.nom
           }
         }
       }).then((result) => {
@@ -28,6 +28,35 @@ class MondayRepository {
       });
 
       return true;
+    }
+
+
+    static async createVerifItems(item): Promise<any> {
+      for (let index = 0; index < item.length; index++) {
+          
+        const element = item[index]
+      
+      await axios({
+        url: 'https://api.monday.com/v2',
+        method: 'post',
+        headers: {
+        Authorization: "XXXXXXXXXXXXXXXXXXXX"
+
+        },
+        data: {
+          query: `
+            mutation {create_item (board_id: 6797870427, group_id: \"topics\", item_name: \"${element.Nom}\", column_values: \"{\\\"status\\\":\\\"À Vérifier\\\", \\\"texte3__1\\\":\\\"${element.email  || "No Email"}\\\", \\\"texte__1\\\":\\\"Test\\\", \\\"chiffres__1\\\":\\\"${element.id}\\\", \\\"chiffres7__1\\\":\\\"${element.telephone || 0}\\\" }\" ) {id}}
+          `
+        }
+      }).then((result) => {
+        console.log(result.data)
+      }).catch((error) => {
+        console.log(error);
+      });
+
+      
+    }
+    return true;
     }
   }
   

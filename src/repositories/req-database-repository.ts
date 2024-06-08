@@ -1,8 +1,10 @@
 import mysql from 'mysql2/promise';
 import { Business } from '../models/business';
+import querystring from "querystring"
+import { query } from 'express';
 
 class ReqDatabaseRepository {
-    static async getAllItems(): Promise<Business[]> {
+    static async getAllItems(queryStr): Promise<any> {
       let itemsToReturn: Business[] = [];
 
       let connection = await mysql.createConnection({
@@ -14,8 +16,9 @@ class ReqDatabaseRepository {
 
       try {
         const [results, fields] = await connection.query(
-          'SELECT * FROM leads.localisation'
+          queryStr
         );
+
 
         let index: number = 0;
         while (index >= 0) {
