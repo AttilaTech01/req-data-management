@@ -3,18 +3,13 @@ from playwright.async_api import async_playwright
 from playwright.sync_api import sync_playwright
 import re
 from difflib import SequenceMatcher
-import dns.resolver
-import mysql.connector
+#import dns.resolver
+#import mysql.connector
 
 
 def similar(a, b):
     return SequenceMatcher(None, a, b).ratio()
             
-
-
-
-
-
 
 def format_name (name):
     name = name.lower()
@@ -25,7 +20,6 @@ def format_name (name):
             list_name.pop(x[0])
 
     return " ".join(list_name)
-
 
 
 def validate_company_name(name, email):
@@ -41,8 +35,7 @@ def validate_company_name(name, email):
     # Calculate similarity
     similarity = similar(company_name_normalized, base_domain_normalized)
     #print(similarity)
-    return similarity
-    
+    return similarity  
 
 
 def second_valdiate (name, company_email): 
@@ -58,60 +51,6 @@ def second_valdiate (name, company_email):
     else: 
         print("The Email is bad")
 
-
-
-
-
-
-# Add the search for contact and for 
-
-async def get_website_contact(website):
-           async with async_playwright() as p:
-                # trr
-                browser = await p.chromium.launch(headless=False)  # Set headless=True for headless mode
-                page =  await browser.new_page()
-                
-                urls = []
-                await page.goto(website)
-                regex_email =  re.compile(r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}")
-                
-                page = await page.content()
-                print(page)
-                email_home = regex_email.findall(page)
-                print(email_home)
-                for li in await page.get_by_text("Contact").all():
-                    await li.click()
-                    curr_page = await page.content()
-                    email = regex_email.findall(curr_page) 
-                    
-                #if Contact:
-                    #Contact = await page.get_by_text("Contact").click()
-                await browser.close()
-
-
-                return email_home, email
-
-
-
-async def get_website_url(company_name):
-           async with async_playwright() as p:
-                browser = await p.chromium.launch(headless=False)  # Set headless=True for headless mode
-                page =  await browser.new_page()
-                
-                urls = []
-                await page.goto(f"https://www.google.com/search?q={company_name}")
-               # first_result_selector = 'h3 a'  # Selector for the first result link
-               # xz = page.locator(first_result_selector)
-                
-
-        # Extraire toutes les URLs des résultats de recherche
-                #results = await page.get_by_role("Heading").all_inner_texts()  
-                element = await page.query_selector('a.sVXRqc')
-                await page.wait_for_timeout(5000)
-                url = await element.get_attribute('href') if element else None
-                await browser.close()
-                print(url)
-                return url
 
 async def get_contact_info(company_name):
     async with async_playwright() as p:
@@ -177,10 +116,7 @@ async def get_contact_info(company_name):
                     email = "INVALID"
                     treshold = 0
                     return email, treshold
-
-
-
-        
+     
 
 def get_database():
     mydb = mysql.connector.connect(
@@ -231,16 +167,80 @@ def update_database(arr, obj):
 
     # List of companies to search for
 
+'''
+# Old version
+async def get_website_contact(website):
+           async with async_playwright() as p:
+                # trr
+                browser = await p.chromium.launch(headless=False)  # Set headless=True for headless mode
+                page =  await browser.new_page()
+                
+                urls = []
+                await page.goto(website)
+                regex_email =  re.compile(r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}")
+                
+                page = await page.content()
+                email_home = regex_email.findall(page)
+                for li in await page.get_by_text("Contact").all():
+                    await li.click()
+                    curr_page = await page.content()
+                    email = regex_email.findall(curr_page) 
+                    
+                #if Contact:
+                    #Contact = await page.get_by_text("Contact").click()
+
+                await browser.close()
+                return email_home, email
+'''
+
+async def get_website_url(company_name):
+           async with async_playwright() as p:
+                browser = await p.chromium.launch(headless=False)  # Set headless=True for headless mode
+                page =  await browser.new_page()
+                
+                urls = []
+                await page.goto(f"https://www.google.com/search?q={company_name}")
+               # first_result_selector = 'h3 a'  # Selector for the first result link
+               # xz = page.locator(first_result_selector)
+                
+
+        # Extraire toutes les URLs des résultats de recherche
+                #results = await page.get_by_role("Heading").all_inner_texts()  
+                element = await page.query_selector('a.sVXRqc')
+                await page.wait_for_timeout(5000)
+                url = await element.get_attribute('href') if element else None
+                await browser.close()
+                return url
+
+
+async def get_website_contact_V2(website):
+           async with async_playwright() as p:
+                # Launch browser
+                browser = await p.chromium.launch(headless=False)  # Set headless=True for headless mode
+                page =  await browser.new_page()
+                
+                # Go to website and wait for page to load
+                urls = []
+                await page.goto(website)
+                page_content = await page.content()
+
+                # Search regex pattern in my html content
+                pattern = '[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
+                found_emails = re.findall(pattern, page_content)
+
+                await browser.close()
+                return found_emails
 
 
 async def main():
-
-        
     #leads =  get_database()
     leads = "Galilée Construction inc"
     url = await get_website_url(leads)
-    test = await get_website_contact(url)
-    print(test)
+    print("Found url: " + url)
+    #test = await get_website_contact(url)
+    dh_test = await get_website_contact_V2(url)
+    print("Result: ")
+    print(dh_test)
     #for x in leads:
        # print(x)
        # info = await get_contact_info(x[3])
