@@ -1,6 +1,8 @@
 import axios from 'axios';
 
 class MondayRepository {
+
+  // Get the object taht the services give ( database Object)
     static async createItem(item): Promise<boolean> {
       await axios({
         url: 'https://api.monday.com/v2',

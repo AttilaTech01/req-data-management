@@ -3,20 +3,7 @@ import reqRepository from '../repositories/req-database-repository';
 import { Business } from '../models/business';
 import express, { Request, Response } from 'express';
 class ReqService {
-  static async createItems(boardId, dataArr): Promise<boolean> {
-    try {
-
-      const dataList = dataArr.data
-      dataList.array.forEach(element => {
-        mondayRepository.createItem(element)
-      });
-
-      return true;
-   } catch (error) {
-      console.log(error);
-      throw error;
-    }
-  }
+  
 //  Look how type script work
   static async getAllItems(req: Request): Promise<any> {
     try {
@@ -47,8 +34,12 @@ class ReqService {
 
       const result = await reqRepository.getAllItems(queryStr);
       const data = result.data
-      console.log(result)
-      return result;
+      //console.log(result)
+      
+      await mondayRepository.createItem(result)
+
+      
+
     } catch (error) {
       console.log(error);
       throw error;
@@ -69,7 +60,12 @@ class ReqService {
 
 
       const result = await reqRepository.getAllItems(queryStr);
-      
+
+      // If there is no result return sucess
+
+      if (result.length === 0) {
+        return true 
+      }
 // Calling the function with a loop or create the Loop directly inside the repo
      await mondayRepository.createVerifItems(result)
 
