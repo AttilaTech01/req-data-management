@@ -230,33 +230,36 @@ async def get_website_contact(website):
 
 async def get_website_url(company_name):
            async with async_playwright() as p:
-                browser = await p.chromium.launch(headless=False)  # Set headless=True for headless mode
-                page =  await browser.new_page()
+                try:
+                    browser = await p.chromium.launch(headless=False)  # Set headless=True for headless mode
+                    page =  await browser.new_page()
 
-                await page.goto(f"https://www.google.com/search?q={company_name}")
-               
-
-
-        # Extraire toutes les URLs des résultats de recherche
-                
+                    await page.goto(f"https://www.google.com/search?q={company_name}")
                 
 
-                #wait for the pages to load
-                await page.wait_for_selector('h3')
 
-                #get the first link
-                first_link = await page.query_selector('h3')
+            # Extraire toutes les URLs des résultats de recherche
+                    
+                    
+                    
+                    #wait for the pages to load
+                    await page.wait_for_selector('h3')
 
-                # Click on the first link
-                await first_link.click()
-                     
-                # Await for the page to laod
-                await page.wait_for_timeout(5000)
+                    #get the first link
+                    first_link = await page.query_selector('h3')
 
-                page_url = page.url
-                
+                    # Click on the first link
+                    await first_link.click()
+                        
+                    # Await for the page to laod
+                    await page.wait_for_timeout(5000)
 
-                return page_url
+                    page_url = page.url
+                    
+
+                    return page_url
+                except:
+                     return None
 
 
 
@@ -267,65 +270,74 @@ async def get_website_url(company_name):
 async def get_website_info(website):
            async with async_playwright() as p:
                 # Launch browser
-                browser = await p.chromium.launch(headless=False)  # Set headless=True for headless mode
-                page =  await browser.new_page()
+                #If no Url is FOUND
+                if not website:
+                     return None
+
+                try:
+                    browser = await p.chromium.launch(headless=False)  # Set headless=True for headless mode
+                    page =  await browser.new_page()
+                
+
+                    # Go to website and wait for page to load main page
+                    urls = []
+                    await page.goto(website)
+                    page_content = await page.content()
+
+                    # Search regex pattern in my html content
+                    pattern = '[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
+                    found_emails = re.findall(pattern, page_content)
+                    # Search for contact page if the email not found
+                    if not found_emails:
+
+                    # Checking with the key word contact
+
+                        page_contact = await page.get_by_role("button", name= "Contact").is_visible()
+                        if page_contact:
+                            await page.get_by_role("button", name= "Contact").click()
+                            await page.wait_for_timeout(1000)
+
+                            contact_page_content = await page.content()
+
+                            pattern = '[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
+                            found_emails = re.findall(pattern, contact_page_content)
+                            print("Page Contact")
+                            print(found_emails)
+                            
+                            
+                            
+
+                            # If no email found try Nous Joindre
+
+                            if not found_emails:
+                                
+                                
+                                if await page.get_by_role("button", name= "Nous Joindre").is_visible():
+
+
+                                    await page.get_by_role("button", name= "Nous Joindre").click()
+
+
+                                    await page.wait_for_timeout(1000)
+
+                                    NousJoindre_page_content = await page.content()
+
+                                    pattern = '[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
+                                    found_emails = re.findall(pattern, NousJoindre_page_content)
+                                    print("Nous Joindre")
+                                    print(found_emails)
+                        
+                    
+                                    print(found_emails)
             
 
-                # Go to website and wait for page to load main page
-                urls = []
-                await page.goto(website)
-                page_content = await page.content()
+                    await browser.close()
+                    return found_emails
 
-                # Search regex pattern in my html content
-                pattern = '[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
-                found_emails = re.findall(pattern, page_content)
-                # Search for contact page if the email not found
-                if not found_emails:
-
-                # Checking with the key word contact
-
-                    page_contact = await page.get_by_role("button", name= "Contact").is_visible()
-                    if page_contact:
-                        await page.get_by_role("button", name= "Contact").click()
-                        await page.wait_for_timeout(1000)
-
-                        contact_page_content = await page.content()
-
-                        pattern = '[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
-                        found_emails = re.findall(pattern, contact_page_content)
-                        print("Page Contact")
-                        print(found_emails)
-                        
-                        
-                        
-
-                        # If no email found try Nous Joindre
-
-                        if not found_emails:
-                            
-                            
-                            if await page.get_by_role("button", name= "Nous Joindre").is_visible():
-
-
-                                await page.get_by_role("button", name= "Nous Joindre").click()
-
-
-                                await page.wait_for_timeout(1000)
-
-                                NousJoindre_page_content = await page.content()
-
-                                pattern = '[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
-                                found_emails = re.findall(pattern, NousJoindre_page_content)
-                                print("Nous Joindre")
-                                print(found_emails)
-                    
-                
-                                print(found_emails)
-                
-
-                await browser.close()
-                return found_emails
-
+                except:
+                     
+                     found_emails= None
+                     return found_emails
                 
               
 
