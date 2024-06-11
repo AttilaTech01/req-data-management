@@ -2,23 +2,25 @@ import mondayRepository from '../repositories/monday-repository'
 import reqRepository from '../repositories/req-database-repository';
 import { Business } from '../models/business';
 import express, { Request, Response } from 'express';
+import { after } from 'node:test';
 class ReqService {
   
 //  Look how type script work
   static async getAllItems(req: Request): Promise<any> {
     try {
-      let queryStr = "SELECT localisation.*, category.nom, mrc.nom, name.Nom FROM localisation JOIN secteurs ON localisation.secteur = secteurs.secteur_name JOIN category ON secteurs.category_id = category.category_id JOIN ville on localisation.ville = ville.ville_name JOIN mrc on ville.mrc_id = mrc.mrc_id Join name on localisation.neq = name.NEQ";
-      console.log(req.query)
+      let queryStr = "SELECT DISTINCT category.nom as 'Category', localisation.email, localisation.id, localisation.neq, localisation.secteur, localisation.adresse, localisation.ville, localisation.mrc_id, category.nom, mrc.nom, name.Nom FROM localisation JOIN secteurs ON localisation.secteur = secteurs.secteur_name JOIN category ON secteurs.category_id = category.category_id JOIN ville on localisation.ville = ville.ville_name JOIN mrc on ville.mrc_id = mrc.mrc_id Join name on localisation.neq = name.NEQ   "
+
       const{ category, mrc, limit} = req.query
       
       if (category && mrc) {
 
         // Add a case to the category name to an id
-        queryStr+= ` Where category.category_id = ${category} and mrc.mrc_id = ${mrc}`
+        queryStr+= ` Where category.category_id = ${category} and mrc.mrc_id = ${mrc} and localisation.email is not null and localisation.email != "INVALID"`
       }
         // Parse the interger
       if (limit) {
-        queryStr+= ` Limit = ${category} `
+       // queryStr+= ` Limit = ${category} `
+       queryStr+= "Limit = 1 "
       }
 
       queryStr += ";"
@@ -33,17 +35,30 @@ class ReqService {
 
 
       const result = await reqRepository.getAllItems(queryStr);
-      const data = result.data
-      //console.log(result)
       
-      await mondayRepository.createItem(result)
+      console.log(result)
 
-      
+    
+      if (result.length === 0) {
+        return true 
+      }
 
-    } catch (error) {
-      console.log(error);
-      throw error;
-    }
+      for (let index = 0; index < result.length; index++) {
+        const element = result[index];
+        
+        await mondayRepository.createItem(element)
+        
+        // Updating the status of the item
+        const updateQuery =`
+          update localisation set migration = true where id = ${element.id}
+          `
+       await reqRepository.getAllItems(updateQuery)
+      }
+
+      } catch (error) {
+     console.log(error);
+     throw error;
+   }
   }
 
 
