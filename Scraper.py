@@ -31,7 +31,7 @@ async def validate_company_name(name, email):
     base_domain_normalized = base_domain.lower().replace(' ', '')
 
     # Calculate similarity
-    similarity = similar(company_name_normalized, base_domain_normalized)
+    similarity = await similar(company_name_normalized, base_domain_normalized)
     #print(similarity)
     return similarity  
 
@@ -40,14 +40,11 @@ async def second_valdiate (name, company_email):
     list_result= []
     list_name = name.split(" ")
     for n in list_name:
-        result = validate_company_name(n, company_email)
+        result = await validate_company_name(n, company_email)
         list_result.append(result)
-    average = sum(list_result) / len(list_result)
-    print(average)
-    if average >= 0.5:
-        print("The email is good")
-    else: 
-        print("The Email is bad")
+    average =  sum(list_result) / len(list_result)
+    return average
+
 
 # function to format the email if it's an array or a object NONE
 async def email_found_formating(found_emails):
@@ -89,17 +86,18 @@ async def verification_email(emails, comapny_name):
 
     if result >= 0.55:
 
-        return email, result
+        return verif_email, result
     else: 
         result = await second_valdiate(comapny_name, verif_email)
         if result >= 0.55:
-            
-            return email, result
+            print(verif_email)
+            return verif_email, result
         else: 
 
-            email = "INVALID"
+            verif_email = "INVALID"
             treshold = 0
-            return email, treshold
+            print(verif_email)
+            return verif_email, treshold
     
 
 
@@ -163,7 +161,7 @@ def get_database():
     database="leads"
     )
     # Dataabse query to get information about the leads without a email
-    query = 'Select DISTINCT localisation.telephone, localisation.email, localisation.treshold, name.Nom, localisation.id from localisation Inner JOIN name on localisation.neq = name.NEQ and localisation.email is NULL LIMIT 2;'
+    query = 'Select DISTINCT localisation.telephone, localisation.email, localisation.treshold, name.Nom, localisation.id from localisation Inner JOIN name on localisation.neq = name.NEQ and localisation.email is NULL LIMIT 1;'
 
     mycursor = mydb.cursor()
     mycursor.execute(query)
@@ -182,7 +180,7 @@ def update_database(lead_id, email, treshold):
     database="leads"
     )
         
-
+    
     #Get the ID###############################################
     query =f"Update localisation set email = '{email}', treshold = {treshold}  where id= {lead_id};"
     print(query)
