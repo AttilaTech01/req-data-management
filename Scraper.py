@@ -107,49 +107,51 @@ async def verification_email(emails, comapny_name):
 # get the Facebook info
 async def get_facebook_info(company_name):
     async with async_playwright() as p:
-        browser = await p.chromium.launch(headless=False)  # Set headless=True for headless mode
-        context = await browser.new_context()
-        page = await context.new_page()
+        try: 
+            browser = await p.chromium.launch(headless=False)  # Set headless=True for headless mode
+            context = await browser.new_context()
+            page = await context.new_page()
 
-        await page.goto(f"https://www.google.com/search?q={company_name}")
+            await page.goto(f"https://www.google.com/search?q={company_name}")
 
-       #wait the page 
-        await page.wait_for_selector('div#search')
-        page_content = await page.content()
-
-        facebook_pattern = re.compile(r"https:\/\/www\.facebook\.com\/[a-zA-Z0-9\.\-\/_]+")
-        facebook_links = facebook_pattern.findall(page_content)
-  
-        if facebook_links:
-            facebook_link = facebook_links[0]  # Take the first match if multiple found
-            # Go to the Facebook page
-            await page.goto(facebook_link)
-            
-            # Wait for the Facebook page to load
-            await page.wait_for_selector('body')
-
-            try:
-                await page.click('div[aria-label="Fermer"]')
-                print(f"Closed the popup on the Facebook page for {company_name}")
-            except:
-                print(f"No 'Fermer' button found for {company_name}")
-
-            # Extract email and phone number from the Facebook page
+        #wait the page 
+            await page.wait_for_selector('div#search')
             page_content = await page.content()
 
-            email_pattern = re.compile(r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}")
-
-            # Find all matches of the email pattern in the page content
-           
-            
-            company_emails = email_pattern.findall(page_content)
+            facebook_pattern = re.compile(r"https:\/\/www\.facebook\.com\/[a-zA-Z0-9\.\-\/_]+")
+            facebook_links = facebook_pattern.findall(page_content)
+    
+            if facebook_links:
+                facebook_link = facebook_links[0]  # Take the first match if multiple found
+                # Go to the Facebook page
+                await page.goto(facebook_link)
                 
-             
-            return company_emails
+                # Wait for the Facebook page to load
+                await page.wait_for_selector('body')
+
+                try:
+                    await page.click('div[aria-label="Fermer"]')
+                    print(f"Closed the popup on the Facebook page for {company_name}")
+                except:
+                    print(f"No 'Fermer' button found for {company_name}")
+
+                # Extract email and phone number from the Facebook page
+                page_content = await page.content()
+
+                email_pattern = re.compile(r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}")
+
+                # Find all matches of the email pattern in the page content
+            
+                
+                company_emails = email_pattern.findall(page_content)
+                    
+                
+                return company_emails
         # If there is no facebook links return None
-        return None
+            return None
 
-
+        except:
+             return None
 
 
 
