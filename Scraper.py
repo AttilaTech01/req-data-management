@@ -22,8 +22,9 @@ async def format_name (name):
 
 
 async def validate_company_name(name, email):
-                
-    base_domain = email.split('@')[1]
+    email_split =  email.split('@')           
+    base_domain = email_split[0]
+    email_name = email_split[1]
     base_domain = base_domain.split('.')[0]
 
     # Normalize company name and domain for comparison
@@ -32,6 +33,8 @@ async def validate_company_name(name, email):
 
     # Calculate similarity
     similarity = await similar(company_name_normalized, base_domain_normalized)
+    if similarity < 0.55:
+         similarity = await similar(company_name_normalized, email_name )
     #print(similarity)
     return similarity  
 
@@ -280,7 +283,7 @@ async def get_website_info(website):
                 
 
                     # Go to website and wait for page to load main page
-                    urls = []
+                    
                     await page.goto(website)
                     page_content = await page.content()
 
