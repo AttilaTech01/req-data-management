@@ -1,5 +1,5 @@
 import express from 'express';
-import { getAllItems, getVerifItems } from '../controllers/controller';
+import { getAllItems, getNonVerifSecteurs, getVerifItems, UpdateNonVerifSecteurs, UpdateVerifiedLeadsDb } from '../controllers/controller';
 //import { createItems, getAllItems } from '../controllers/controller';
 const router = express();
 
@@ -21,6 +21,23 @@ router.get('/get-all-items', (req, res) => {
 router.get('/get-verif-items', (req, res) => {
   getVerifItems(req, res);
 });
+
+
+router.get('/get-non-verif-secteur', (req, res) => {
+  getNonVerifSecteurs(req, res);
+});
+
+
+router.post('/create-verif-secteur', (req, res) => {
+  UpdateNonVerifSecteurs(req, res);
+});
+
+
+router.patch('/update-verif-leads', (req, res) => {
+  UpdateVerifiedLeadsDb(req, res);
+});
+
+
 
 // POST
 //router.post('/create-items', (req, res) => {

@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { query } from 'express';
+import { query, response } from 'express';
 
 class MondayRepository {
 
@@ -12,7 +12,7 @@ class MondayRepository {
         url: 'https://api.monday.com/v2',
         method: 'post',
         headers: {
-          Authorization: "eyJhbGciOiJIUzI1NiJ9.eyJ0aWQiOjM2OTY3NDMzOSwiYWFpIjoxMSwidWlkIjo0MjcyNjAyMiwiaWFkIjoiMjAyNC0wNi0wOFQxODowODoxMi40NTZaIiwicGVyIjoibWU6d3JpdGUiLCJhY3RpZCI6MTEwMDIyMzEsInJnbiI6InVzZTEifQ.PY5ZV4uTWp4jWgu5b8GDMtapBJiTDMhhLywhtht_Jx8"
+          Authorization: process.env.MONDAY_ACCES_TOKEN
         },
         data: {
           query:
@@ -30,20 +30,19 @@ class MondayRepository {
 
 
     static async createVerifItems(item): Promise<any> {
-      for (let index = 0; index < item.length; index++) {
-          
-        const element = item[index]
+      
+  
       
       await axios({
         url: 'https://api.monday.com/v2',
         method: 'post',
         headers: {
-        Authorization: "eyJhbGciOiJIUzI1NiJ9.eyJ0aWQiOjM2OTY3NDMzOSwiYWFpIjoxMSwidWlkIjo0MjcyNjAyMiwiaWFkIjoiMjAyNC0wNi0wOFQxODowODoxMi40NTZaIiwicGVyIjoibWU6d3JpdGUiLCJhY3RpZCI6MTEwMDIyMzEsInJnbiI6InVzZTEifQ.PY5ZV4uTWp4jWgu5b8GDMtapBJiTDMhhLywhtht_Jx8"
+        Authorization: process.env.MONDAY_ACCES_TOKEN
 
         },
         data: {
           query: `
-            mutation {create_item (board_id: 6797870427, group_id: \"topics\", item_name: \"${element.Nom}\", column_values: \"{\\\"status\\\":\\\"À Vérifier\\\", \\\"texte3__1\\\":\\\""bturcote@gmail.com" "bturcote@gmail.com"\\\", \\\"texte__1\\\":\\\"Test\\\", \\\"chiffres__1\\\":\\\"${element.id}\\\", \\\"chiffres7__1\\\":\\\"${element.telephone || 0}\\\" }\" ) {id}}
+            mutation {create_item (board_id: 6797870427, group_id: \"topics\", item_name: \"${item.Nom}\", column_values: \"{\\\"status\\\":\\\"À Vérifier\\\", \\\"chiffres__1\\\":\\\"${item.id}\\\" }\" ) {id}}
           `
         }
         
@@ -54,10 +53,161 @@ class MondayRepository {
       });
 
       
-    }
+    
     
     return true;
     }
+
+    static async createNotVerifiedSecteur(item): Promise<any> {
+      
+          
+        
+      
+      await axios({
+        url: 'https://api.monday.com/v2',
+        method: 'post',
+        headers: {
+        Authorization: process.env.MONDAY_ACCES_TOKEN
+
+        },
+        data: {
+          query: `
+             mutation ($boardId: ID!) {create_item (board_id: $boardId, group_id: "new_group42707__1", item_name: "${item.secteur}") {id}}
+
+          `,
+          variables: {
+            boardId: 6819942732
+            
+          }
+          
+        }
+        
+      }).then((result) => {
+        console.log(result.data)
+      }).catch((error) => {
+        console.log(error);
+      });
+
+      
+    
+    
+    return true;
+    }
+
+
+
+
+
+    static async getMondayVerifiedSecteur(): Promise<any> {
+      try {
+        const response = await axios({
+          url: 'https://api.monday.com/v2',
+          method: 'post',
+          headers: {
+            Authorization: process.env.MONDAY_ACCES_TOKEN
+          },
+          data: {
+            query: "query { items_page_by_column_values (board_id: 6819942732, columns: [{column_id: \"statut4__1\", column_values: \"Vérifié\"}]) { cursor items { id name column_values {id text} }}}"
+          }
+        });
+    
+        console.log(response.data);
+        return response.data; 
+      } catch (error) {
+        console.log(error);
+        throw error;
+      }
+    }
+    
+
+    static async UpdateVerifiedSecteurStatus(item): Promise<any> {
+      
+          
+        
+      
+      await axios({
+        url: 'https://api.monday.com/v2',
+        method: 'post',
+        headers: {
+        Authorization: process.env.MONDAY_ACCES_TOKEN
+
+        },
+        data: {
+          query: `
+             mutation {change_multiple_column_values(item_id:${item.id}, board_id:6819942732, column_values: \"{\\\"statut4__1\\\" : {\\\"label\\\" : \\\"Fait\\\"}}\") {id}}
+          `
+          
+        }
+        
+      }).then((result) => {
+        console.log(result.data)
+      }).catch((error) => {
+        console.log(error);
+      });
+
+      
+    
+    
+    return true;
+    }
+
+
+
+    static async UpdateVerifiedLeadsStatus(itemID): Promise<any> {
+      
+          
+        
+      
+      await axios({
+        url: 'https://api.monday.com/v2',
+        method: 'post',
+        headers: {
+        Authorization: process.env.MONDAY_ACCES_TOKEN
+
+        },
+        data: {
+          query: `
+             mutation {change_multiple_column_values(item_id:${itemID}, board_id:6797870427, column_values: \"{\\\"status\\\" : {\\\"label\\\" : \\\"Fait\\\"}}\") {id}}
+          `
+          
+        }
+        
+      }).then((result) => {
+        console.log(result.data)
+      }).catch((error) => {
+        console.log(error);
+      });
+
+      
+    
+    
+    return true;
+    }
+
+    static async getMondayVerifiedLeads(): Promise<any> {
+      try {
+        const response = await axios({
+          url: 'https://api.monday.com/v2',
+          method: 'post',
+          headers: {
+            Authorization: process.env.MONDAY_ACCES_TOKEN
+          },
+          data: {
+            query: "query { items_page_by_column_values (board_id: 6797870427, columns: [{column_id: \"status\", column_values: \"Vérifié\"}]) { cursor items { id name column_values {id text} }}}"
+          }
+        });
+    
+        console.log(response.data);
+        return response.data; 
+      } catch (error) {
+        console.log(error);
+        throw error;
+      }
+    }
+
+
+
+
   } 
   
   export default MondayRepository;
