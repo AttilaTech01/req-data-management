@@ -1,9 +1,9 @@
 import express from 'express';
-import { getAllItems, getNonVerifSecteurs, getVerifItems, UpdateNonVerifSecteurs, UpdateVerifiedLeadsDb } from '../controllers/controller';
+import { getAllItems, getUnVerifiedSecteurs, getUnVerifiedLeads, UpdateNonVerifSecteurs, UpdateVerifiedLeads } from '../controllers/controller';
 //import { createItems, getAllItems } from '../controllers/controller';
 const router = express();
 
-// GET
+// INDEX
 router.get('/', (req, res) => {
   res.json(getHealth());
 });
@@ -13,36 +13,27 @@ router.get('/health', (req, res) => {
   res.end();
 });
 
+// LEADS
 router.get('/get-all-items', (req, res) => {
   getAllItems(req, res);
 });
 
-
-router.get('/get-verif-items', (req, res) => {
-  getVerifItems(req, res);
+router.get('/get-unverified-leads', (req, res) => {
+  getUnVerifiedLeads(req, res);
 });
 
-
-router.get('/get-non-verif-secteur', (req, res) => {
-  getNonVerifSecteurs(req, res);
+router.patch('/update-verified-leads', (req, res) => {
+  UpdateVerifiedLeads(req, res);
 });
 
+// SECTEURS
+router.get('/get-unverified-secteur', (req, res) => {
+  getUnVerifiedSecteurs(req, res);
+});
 
 router.post('/create-verif-secteur', (req, res) => {
   UpdateNonVerifSecteurs(req, res);
 });
-
-
-router.patch('/update-verif-leads', (req, res) => {
-  UpdateVerifiedLeadsDb(req, res);
-});
-
-
-
-// POST
-//router.post('/create-items', (req, res) => {
-  //createItems(req, res);
-//});//
 
 // FUNCTIONS
 function getHealth() {

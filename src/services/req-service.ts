@@ -4,89 +4,67 @@ import { Business } from '../models/business';
 import express, { Request, Response } from 'express';
 import { after } from 'node:test';
 import MondayRepository from '../repositories/monday-repository';
+
 class ReqService {
-  
-//  Look how type script work
   static async getAllItems(req: Request): Promise<any> {
     try {
-      let queryStr = "SELECT DISTINCT category.nom as 'Category', localisation.email, localisation.id, localisation.neq, localisation.secteur, localisation.adresse, localisation.ville, localisation.mrc_id, category.nom, mrc.nom, name.Nom FROM localisation JOIN secteurs ON localisation.secteur = secteurs.secteur_name JOIN category ON secteurs.category_id = category.category_id JOIN ville on localisation.ville = ville.ville_name JOIN mrc on ville.mrc_id = mrc.mrc_id Join name on localisation.neq = name.NEQ   "
-
-      const{ category, mrc, limit} = req.query
+      let queryStr = "SELECT DISTINCT category.nom as 'Category', localisation.email, localisation.id, localisation.neq, localisation.secteur, localisation.adresse, localisation.ville, localisation.mrc_id, category.nom, mrc.nom, name.Nom FROM localisation JOIN secteurs ON localisation.secteur = secteurs.secteur_name JOIN category ON secteurs.category_id = category.category_id JOIN ville on localisation.ville = ville.ville_name JOIN mrc on ville.mrc_id = mrc.mrc_id Join name on localisation.neq = name.NEQ";
+      const { category, mrc, limit } = req.query;
       
       if (category && mrc) {
-
         // Add a case to the category name to an id
         queryStr+= ` Where category.category_id = ${category} and mrc.mrc_id = ${mrc} and localisation.email is not null and localisation.email != "INVALID" and localisation.migration is null`
       }
-        // Parse the interger
+      // Parse the interger
       if (limit) {
-       queryStr+= ` Limit ${limit} `
-       
+        queryStr+= ` Limit ${limit} `; 
       }
 
-      queryStr += ";"
+      queryStr += ";";
 
-
-      console.log(queryStr)
-
-
+      const result = await reqRepository.customQueryDB(queryStr);
       
-      
-     // Send the Query STR to the repo
-
-
-      const result = await reqRepository.getAllItems(queryStr);
-      
-      console.log(result)
-
-    
       if (result.length === 0) {
-        return true 
+        return true;
       }
 
       for (let index = 0; index < result.length; index++) {
         const element = result[index];
         
-        await mondayRepository.createItem(element)
+        await mondayRepository.createMondayItem(element);
         
-        // Updating the status of the item
+        // Updating the status of the DB item
         const updateQuery =`
           update localisation set migration = true where id = ${element.id}
-          `
-       await reqRepository.getAllItems(updateQuery)
+        `;
+        await reqRepository.customQueryDB(updateQuery)
       }
-
-      } catch (error) {
+    } catch (error) {
      console.log(error);
      throw error;
    }
   }
 
-
-// Get all the items with a treshold less than 0.5
-
-  static async getVerifItems(req: Request): Promise<any> {
+  // LEADS
+  // Get all the items with email=INVALID and a treshold less than 0.5 from the DB
+  // Create each of them in monday board (6797870427)
+  static async getUnVerifiedLeads(): Promise<any> {
     try {
       let queryStr = "SELECT DISTINCT localisation.*, category.nom, mrc.nom, name.Nom FROM localisation JOIN secteurs ON localisation.secteur = secteurs.secteur_name JOIN category ON secteurs.category_id = category.category_id JOIN ville on localisation.ville = ville.ville_name JOIN mrc on ville.mrc_id = mrc.mrc_id Join name on localisation.neq = name.NEQ Where localisation.treshold < 0.5 and localisation.email = 'INVALID'";
-      
-
-
-      const result = await reqRepository.getAllItems(queryStr);
+      const result = await reqRepository.customQueryDB(queryStr);
       console.log(result)
-      // If there is no result return sucess
 
+      // If there is no result return sucess
       if (result.length === 0) {
         return true 
       }
-// Calling the function with a loop or create the Loop directly inside the repo
+
       for (let index = 0; index < result.length; index++) {
         const element = result[index];
-        await mondayRepository.createVerifItems(element)
+        await mondayRepository.createUnVerifiedLead(element)
+        // TODO: update DB status to VERIF
       }
 
-     
-
-      
       return result;
     } catch (error) {
       console.log(error);
@@ -94,15 +72,35 @@ class ReqService {
     }
   }
 
+  static async UpdateVerifiedLeads(): Promise<any> {
+    try { 
+      const verifiedLeadsObject = await mondayRepository.getMondayVerifiedLeads();
+      const verifiedLeads = verifiedLeadsObject.data.items_page_by_column_values.items;
 
+      for (let index = 0; index < verifiedLeads.length; index++) {
+        const element = verifiedLeads[index];
+        const queryStr = `UPDATE localisation set email=${element.column_values[3].text} where id = ${element.column_values[2].text}`;
 
-// Function that create secteur that are not verified to monday
+        // Update the Database
+        await reqRepository.customQueryDB(queryStr);
+        // Update the monday status
+        await mondayRepository.UpdateVerifiedLeadStatus(element.id);
+      }
 
-  static async getNonVerifSecteurs(req: Request): Promise<any> {
+      return true;
+      } catch (error) {
+      console.log(error);
+      throw error;
+    }
+  }
+
+  // SECTEURS
+  // Function that create secteur that are not verified to monday
+  static async getUnVerifiedSecteurs(): Promise<any> {
     try {
       let queryStr = "select distinct localisation.secteur from localisation where localisation.secteur not in (select distinct secteur_name from secteurs) and localisation.secteur  != '-';"
 
-      const result = await reqRepository.getAllItems(queryStr);
+      const result = await reqRepository.customQueryDB(queryStr);
 
       if (result.length === 0) {
         return true 
@@ -110,15 +108,9 @@ class ReqService {
 
       for (let index = 0; index < result.length; index++) {
         const element = result[index];
-        
-        console.log(element)
-        await mondayRepository.createNotVerifiedSecteur(element)
-
+        await mondayRepository.createUnVerifiedSecteur(element);
       }
 
-// Calling the function with a loop or create the Loop directly inside the repo
-    
-      console.log(result)
       return result;
     } catch (error) {
       console.log(error);
@@ -126,20 +118,16 @@ class ReqService {
     }
   }
 
-// Functions that Insert secteur to the DB and change the monday status
-  static async UpdateNonVerifSecteurs(req: Request): Promise<any> {
+  // Functions that Insert secteur to the DB and change the monday status
+  static async UpdateVerifiedSecteurs(): Promise<any> {
     try {
-      
-      const VerifObject = await MondayRepository.getMondayVerifiedSecteur()
-      
+      const VerifObject = await MondayRepository.getMondayVerifiedSecteurs();
       const verifiedItems = VerifObject.data.items_page_by_column_values.items
       
       for (let index = 0; index < verifiedItems.length; index++) {
         const element = verifiedItems[index];
         
-        // Get the ID opf the category
-        console.log(element)
-        
+        // Switch on the ID of the category
         switch (element.column_values[1].text) {
           case "Construction":
               element.column_values[1].text = 1;
@@ -190,16 +178,12 @@ class ReqService {
               
               break;
       }
-// Create the query Strings
-     // console.log(element.name)
-  
-      const queryStr = `INSERT INTO secteurs(secteur_name, category_id) values('${element.name}', ${element.column_values[1].text})`
-      
-      // Insert into the database the new secteurs
-      
-      await reqRepository.getAllItems(queryStr)
-      // change the status of the item
-      await  mondayRepository.UpdateVerifiedSecteurStatus(element)
+        const queryStr = `INSERT INTO secteurs(secteur_name, category_id) values('${element.name}', ${element.column_values[1].text})`
+        
+        // Insert into the database the new secteurs
+        await reqRepository.customQueryDB(queryStr);
+        // Change the status of the item
+        await mondayRepository.UpdateVerifiedSecteurStatus(element);
       }
 
       return true;
@@ -209,30 +193,7 @@ class ReqService {
     }
   }
 
-  static async UpdateVerifiedLeadsDb(req: Request): Promise<any> {
-    try {
-      
-      const verifiedLeadsObject = await mondayRepository.getMondayVerifiedLeads()
-      const verifiedLeads = verifiedLeadsObject.data.items_page_by_column_values.items
-      for (let index = 0; index < verifiedLeads.length; index++) {
-        const element = verifiedLeads[index];
 
-        const queryStr = `UPDATE localisation set email=${element.column_values[3].text} where id = ${element.column_values[2].text} `
-        // Update the Database
-        await reqRepository.getAllItems(queryStr)
-        console.log("This ID")
-        console.log(element.id)
-        await mondayRepository.UpdateVerifiedLeadsStatus(element.id)
-      }
-      
-      //console.log(verifiedLeads)
-
-      return true;
-      } catch (error) {
-      console.log(error);
-      throw error;
-    }
-  }
  
 
 
