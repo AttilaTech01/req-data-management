@@ -23,13 +23,12 @@ neq int,
 secteur varchar(255),
 adresse varchar(255),
 ville 	varchar(255),
-mrc_id int,
 téléphone int NULL ,
 courriel varchar(255),
 treshold int,
-migration boolean,
+migration boolean DEFAULT FALSE,
+date_creation date,
 
-constraint fk_mrc_id foreign key(mrc_id) references mrc(mrc_id),
 constraint pk_id primary key(id)
 );
 
@@ -43,16 +42,6 @@ ent_nom varchar(255),
 constraint pk_ent_nom primary key(id)
 );
 
-create table monday (
-
-category_id int NOT NULL,
-mrc_id int NOT NULL,
-board_id int,
-
-constraint fk_monday_category_id foreign key(category_id) references category(category_id),
-constraint fk_monday_mrc_id foreign key(mrc_id) references mrc(mrc_id),
-constraint  pk_monday_id primary key(category_id, mrc_id)
-);
 
 
 
