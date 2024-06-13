@@ -4,7 +4,7 @@ import querystring from "querystring"
 import { query } from 'express';
 
 class ReqDatabaseRepository {
-    static async getAllItems(queryStr): Promise<any> {
+    static async customQueryDB(queryStr): Promise<any> {
       let itemsToReturn: Business[] = [];
 
       let connection = await mysql.createConnection({
