@@ -3,37 +3,35 @@ import { query, response } from 'express';
 
 class MondayRepository {
     // Returns database Object
-    static async createMondayItem(item): Promise<boolean> {
+    static async createMondayItem(item): Promise<any> {
         // \\\"chiffres__1\\\":\\\"${item.telephone}\\\"
-
-        await axios({
-            url: 'https://api.monday.com/v2',
-            method: 'post',
-            headers: {
-                Authorization: process.env.MONDAY_ACCESS_TOKEN,
-            },
-            data: {
-                query: ` mutation {create_item (board_id: 6803849261, group_id: \"new_group42707__1\", item_name: \"${
-                    item.Nom
-                }\", column_values: \"{\\\"statut__1\\\":\\\"${
-                    item.Category
-                }\\\", \\\"email\\\":\\\"${
-                    item.email + ' ' + item.email
-                }\\\", \\\"statut6__1\\\":\\\"${item.nom}\\\", \\\"texte2__1\\\":\\\"${
-                    item.ville
-                }\\\", \\\"texte6__1\\\":\\\"${item.secteur}\\\"  }\") {id}} `,
-            },
-        })
-            .then((result) => {
-                console.log(result.data);
-            })
-            .catch((error) => {
-                //console.log(process.env.MONDAY_ACCESS_TOKEN);
-                console.log(error);
-                error;
+        try {
+            const response = await axios({
+                url: 'https://api.monday.com/v2',
+                method: 'post',
+                headers: {
+                    Authorization: process.env.MONDAY_ACCESS_TOKEN,
+                },
+                data: {
+                    query: ` mutation {create_item (board_id: 6803849261, group_id: \"new_group42707__1\", item_name: \"${
+                        item.Nom
+                    }\", column_values: \"{\\\"statut__1\\\":\\\"${
+                        item.Category
+                    }\\\", \\\"email\\\":\\\"${
+                        item.email + ' ' + item.email
+                    }\\\", \\\"statut6__1\\\":\\\"${
+                        item.nom
+                    }\\\", \\\"texte2__1\\\":\\\"${
+                        item.ville
+                    }\\\", \\\"texte6__1\\\":\\\"${item.secteur}\\\"  }\") {id}} `,
+                },
             });
 
-        return true;
+            console.log(response);
+            return response;
+        } catch (error) {
+            throw new Error(`MondayRepository Error: ${error.message}`);
+        }
     }
 
     // LEADS

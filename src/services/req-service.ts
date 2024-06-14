@@ -4,6 +4,7 @@ import { Business } from '../models/business';
 import express, { Request, Response } from 'express';
 import { after } from 'node:test';
 import MondayRepository from '../repositories/monday-repository';
+import { error } from 'node:console';
 
 class ReqService {
     static async getAllItems(req: Request): Promise<any> {
@@ -30,9 +31,9 @@ class ReqService {
             queryStr += ';';
 
             // Sending the query
-            console.log(queryStr);
+            // console.log(queryStr);
             const result = await reqRepository.customQueryDB(queryStr);
-            console.log(result);
+            //console.log(result);
             if (result.length === 0) {
                 return true;
             }
@@ -40,14 +41,24 @@ class ReqService {
             for (let index = 0; index < result.length; index++) {
                 const element = result[index];
 
-                await mondayRepository.createMondayItem(element);
+                console.log('THis is element');
+                console.log(element);
+                try {
+                    const mondayResponse = await mondayRepository.createMondayItem(
+                        element
+                    );
 
-                // Updating the status of the DB item
-                const updateQuery = ` update localisation set migration = true where id = ${element.id}`;
-                await reqRepository.customQueryDB(updateQuery);
+                    // Updating the status of the DB item
+                    const updateQuery = ` update localisation set migration = true where id = ${element.id}`;
+
+                    await reqRepository.customQueryDB(updateQuery);
+                } catch (error) {
+                    //console.log('Error create Item');
+                    throw error;
+                }
             }
         } catch (error) {
-            console.log(error);
+            // console.log(error);
             throw error;
         }
     }
