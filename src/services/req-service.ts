@@ -15,7 +15,8 @@ class ReqService {
             const { category, mrc, limit } = req.query;
 
             queryStr +=
-                ' Where localisation.email is not null and localisation.email != "INVALID" and localisation.migration = 0 ';
+                //' Where localisation.email is not null and localisation.email != "INVALID" and localisation.migration = 0 ';
+                ' Where localisation.migration = 0 ';
 
             if (category) {
                 // Add a case to the category name to an id
@@ -26,7 +27,7 @@ class ReqService {
                 queryStr += ` and mrc.mrc_id = ${mrc}`;
             }
 
-            queryStr += ` Limit ${limit || 100} `;
+            queryStr += ` Limit ${limit || 50} `;
 
             queryStr += ';';
 
@@ -69,7 +70,7 @@ class ReqService {
     static async getUnVerifiedLeads(): Promise<any> {
         try {
             let queryStr =
-                "SELECT DISTINCT localisation.*, category.nom, mrc.nom, name.Nom FROM localisation JOIN secteurs ON localisation.secteur = secteurs.secteur_name JOIN category ON secteurs.category_id = category.category_id JOIN ville on localisation.ville = ville.ville_name JOIN mrc on ville.mrc_id = mrc.mrc_id Join name on localisation.neq = name.NEQ Where localisation.treshold < 0.5 and localisation.email = 'INVALID'";
+                "SELECT DISTINCT localisation.*, category.nom, mrc.nom, name.Nom FROM localisation JOIN secteurs ON localisation.secteur = secteurs.secteur_name JOIN category ON secteurs.category_id = category.category_id JOIN ville on localisation.ville = ville.ville_name JOIN mrc on ville.mrc_id = mrc.mrc_id Join name on localisation.neq = name.NEQ Where localisation.treshold < 0.5 and localisation.email = 'INVALID' and localistion.email != 'VERIF';";
             const result = await reqRepository.customQueryDB(queryStr);
             console.log(result);
 

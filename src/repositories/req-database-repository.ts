@@ -29,7 +29,7 @@ class ReqDatabaseRepository {
         } catch (err) {
             console.log(err);
         }
-
+        connection.end();
         return itemsToReturn;
     }
 }
