@@ -6,7 +6,7 @@ import {
     UpdateNonVerifSecteurs,
     UpdateVerifiedLeads,
 } from '../controllers/controller';
-//import { createItems, getAllItems } from '../controllers/controller';
+
 const router = express();
 
 // INDEX

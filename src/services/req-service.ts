@@ -23,7 +23,7 @@ class ReqService {
                 queryStr += ` and mrc.mrc_id = ${mrc}`;
             }
 
-            queryStr += ` Limit ${limit || 100} `;
+            queryStr += ` Limit ${limit || 50} `;
 
             queryStr += ';';
 
