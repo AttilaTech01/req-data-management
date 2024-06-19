@@ -11,11 +11,8 @@ class ReqService {
         try {
             // Creating the Query
             let queryStr =
-                "SELECT DISTINCT category.nom as 'Category', localisation.email, localisation.id, localisation.neq, localisation.secteur, localisation.adresse, localisation.ville, localisation.mrc_id, category.nom, mrc.nom, name.Nom FROM localisation JOIN secteurs ON localisation.secteur = secteurs.secteur_name JOIN category ON secteurs.category_id = category.category_id JOIN ville on localisation.ville = ville.ville_name JOIN mrc on ville.mrc_id = mrc.mrc_id Join name on localisation.neq = name.NEQ";
+                "SELECT DISTINCT category.nom as 'Category', localisation.email, localisation.id, localisation.neq, localisation.secteur, localisation.adresse, localisation.ville, category.nom, mrc.nom, name.Nom FROM localisation JOIN secteurs ON localisation.secteur = secteurs.secteur_name JOIN category ON secteurs.category_id = category.category_id JOIN ville on localisation.ville = ville.ville_name JOIN mrc on ville.mrc_id = mrc.mrc_id Join name on localisation.neq = name.NEQ Where localisation.email is not null and localisation.email != 'INVALID' and localisation.migration = 0";
             const { category, mrc, limit } = req.query;
-
-            queryStr +=
-                ' Where localisation.email is not null and localisation.email != "INVALID" and localisation.migration = 0 ';
 
             if (category) {
                 // Add a case to the category name to an id
@@ -69,7 +66,7 @@ class ReqService {
     static async getUnVerifiedLeads(): Promise<any> {
         try {
             let queryStr =
-                "SELECT DISTINCT localisation.*, category.nom, mrc.nom, name.Nom FROM localisation JOIN secteurs ON localisation.secteur = secteurs.secteur_name JOIN category ON secteurs.category_id = category.category_id JOIN ville on localisation.ville = ville.ville_name JOIN mrc on ville.mrc_id = mrc.mrc_id Join name on localisation.neq = name.NEQ Where localisation.treshold < 0.5 and localisation.email = 'INVALID'";
+                "SELECT DISTINCT localisation.*, category.nom, mrc.nom, name.Nom FROM localisation JOIN secteurs ON localisation.secteur = secteurs.secteur_name JOIN category ON secteurs.category_id = category.category_id JOIN ville on localisation.ville = ville.ville_name JOIN mrc on ville.mrc_id = mrc.mrc_id Join name on localisation.neq = name.NEQ Where localisation.treshold < 0.5 and localisation.email = 'INVALID' and localisation.email != 'VERIF' LIMIT 10;";
             const result = await reqRepository.customQueryDB(queryStr);
             console.log(result);
 
@@ -83,8 +80,8 @@ class ReqService {
                 await mondayRepository.createUnVerifiedLead(element);
 
                 // Update Email Status to VERIF
-                const updateQueryStr = `update localisation set email = "VERIF" where id= ${element.id}`;
-                await reqRepository.customQueryDB(queryStr);
+                const updateQueryStr = `update localisation set email = "VERIF" where id= ${element.id};`;
+                await reqRepository.customQueryDB(updateQueryStr);
             }
 
             return result;

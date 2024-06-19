@@ -1,4 +1,7 @@
 -- Script de la création de la BAse de Donnéexecute
+create database leads;
+use leads;
+
 Create Table mrc (
 
 mrc_id int NOT NULL,
@@ -33,11 +36,11 @@ constraint pk_id primary key(id)
 );
 
 
+create table name (
 
-create table nom (
-
-id int NOT NULL,
-ent_nom varchar(255),
+id int  auto_increment  NOT NULL,
+NEQ int,
+Nom varchar(255),
 
 constraint pk_ent_nom primary key(id)
 );
@@ -150,7 +153,7 @@ join secteurs s  on l.secteur = s.secteur_name;
  -- Query supprimer les compagnies à chiffres
  
  -- Delete les compagnies à chiffres
-
+set sql_safe_updates = 0;
 delete
 from name
 Where Nom regexp '^[0-9]{3}.';
@@ -417,7 +420,7 @@ INSERT INTO secteurs (secteur_name, category_id) VALUES
 
 
 
-INSERT INTO secteur (secteur_name, Category_id) VALUES
+INSERT INTO secteurs (secteur_name, Category_id) VALUES
 ('Transport de marchandise', 6),
 ('Transport par remorquage', 6),
 ('Sous-transporteur de lots brisés au Québec (anglais=ltl)', 6),
@@ -821,3 +824,27 @@ INSERT INTO ville (ville_name, mrc_id) VALUES
 update localisation
 set treshold =0.4
 where id = 89211;
+
+
+select * from localisation;
+Select localisation.telephone, localisation.email, localisation.treshold, localisation.id, localisation.neq, name.nom from name inner join localisation on name.NEQ = localisation.neq;
+select * from localisation order by neq asc;
+select * from name order by NEQ asc;
+
+Select DISTINCT localisation.telephone, localisation.email, localisation.treshold, name.Nom, localisation.id from localisation Inner JOIN name on localisation.neq = name.NEQ and localisation.email is NULL LIMIT 10;
+
+select * from localisation where email is not null and email != "INVALID";
+
+
+
+
+update localisation
+set email = "INVALID"
+where email = "VERIF"; 
+
+select * from localisation order by neq asc;
+
+
+
+
+select from localisation where neq = 1143681329;
