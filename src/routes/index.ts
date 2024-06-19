@@ -1,33 +1,52 @@
 import express from 'express';
-import { createItems, getAllItems } from '../controllers/controller';
+import {
+    getAllItems,
+    getUnVerifiedSecteurs,
+    getUnVerifiedLeads,
+    UpdateNonVerifSecteurs,
+    UpdateVerifiedLeads,
+} from '../controllers/controller';
 
 const router = express();
 
-// GET
+// INDEX
 router.get('/', (req, res) => {
-  res.json(getHealth());
+    res.json(getHealth());
 });
 
 router.get('/health', (req, res) => {
-  res.json(getHealth());
-  res.end();
+    res.json(getHealth());
+    res.end();
 });
 
+// LEADS
 router.get('/get-all-items', (req, res) => {
-  getAllItems(req, res);
+    getAllItems(req, res);
 });
 
-// POST
-router.post('/create-items', (req, res) => {
-  createItems(req, res);
+router.get('/get-unverified-leads', (req, res) => {
+    getUnVerifiedLeads(req, res);
+});
+
+router.patch('/update-verified-leads', (req, res) => {
+    UpdateVerifiedLeads(req, res);
+});
+
+// SECTEURS
+router.get('/get-unverified-secteur', (req, res) => {
+    getUnVerifiedSecteurs(req, res);
+});
+
+router.post('/create-verif-secteur', (req, res) => {
+    UpdateNonVerifSecteurs(req, res);
 });
 
 // FUNCTIONS
 function getHealth() {
-  return {
-    ok: true,
-    message: 'Healthy'
-  };
+    return {
+        ok: true,
+        message: 'Healthy',
+    };
 }
 
 export default router;
