@@ -166,11 +166,12 @@ def get_database():
     database="leads"
     )
     # Dataabse query to get information about the leads without a email
-    query = 'Select DISTINCT localisation.telephone, localisation.email, localisation.treshold, name.Nom, localisation.id from localisation Inner JOIN name on localisation.neq = name.NEQ and localisation.email is NULL LIMIT 1;'
+    query = 'Select DISTINCT localisation.telephone, localisation.email, localisation.treshold, name.Nom, localisation.id from localisation Inner JOIN name on localisation.neq = name.NEQ and localisation.email is NULL LIMIT 70;'
 
     mycursor = mydb.cursor()
     mycursor.execute(query)
     rows= mycursor.fetchall()
+    print(rows)
     
     return rows
 
@@ -192,9 +193,9 @@ def update_database(lead_id, email, treshold):
     mycursor = mydb.cursor()
 
     mycursor.execute(query)
-
+    
     mydb.commit()
-
+    mydb.close()
     return
 
 
