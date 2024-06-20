@@ -58,7 +58,7 @@ class MondayRepository {
         return true;
     }
 
-    static async getMondayVerifiedLeads(): Promise<any> {
+    static async getMondayVerifiedLeads(boardId: number, columnId: string, columnValue: string[]): Promise<any> {
         try {
             const response = await axios({
                 url: 'https://api.monday.com/v2',
@@ -67,11 +67,15 @@ class MondayRepository {
                     Authorization: process.env.MONDAY_ACCESS_TOKEN,
                 },
                 data: {
-                    query: 'query { items_page_by_column_values (board_id: 6797870427, columns: [{column_id: "status", column_values: "Vérifié"}]) { cursor items { id name column_values {id text} }}}',
-                },
+                    query: 'query ($boardId: ID!, $columnId: String!, $columnValue: [String]!) { items_page_by_column_values (board_id: $boardId, columns: [{column_id: $columnId, column_values: $columnValue}]) { cursor items { id name column_values {id text} }}}',
+                    variables: {
+                        boardId,
+                        columnId,
+                        columnValue
+                    }
+                }
             });
 
-            console.log(response.data);
             return response.data;
         } catch (error) {
             console.log(error);
@@ -79,7 +83,7 @@ class MondayRepository {
         }
     }
 
-    static async UpdateVerifiedLeadStatus(itemID): Promise<any> {
+    static async UpdateVerifiedLeadStatus(boardId: number, itemId: number, columnId: string, columnValue: string): Promise<any> {
         await axios({
             url: 'https://api.monday.com/v2',
             method: 'post',
@@ -87,7 +91,7 @@ class MondayRepository {
                 Authorization: process.env.MONDAY_ACCESS_TOKEN,
             },
             data: {
-                query: `mutation {change_multiple_column_values(item_id:${itemID}, board_id:6797870427, column_values: \"{\\\"status\\\" : {\\\"label\\\" : \\\"DB Updaté\\\"}}\") {id}}`,
+                query: `mutation {change_multiple_column_values(item_id: ${itemId}, board_id: ${boardId}, column_values: \"{\\\"${columnId}\\\" : {\\\"label\\\" : \\\"${columnValue}\\\"}}\") {id}}`,
             },
         })
             .then((result) => {

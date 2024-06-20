@@ -13,7 +13,7 @@ app.use(routes);
 
 app.listen(port, () =>
     console.log(
-        `REQ Data management API is listening at http://localhost:${port} THIS IS THE KEY ${key}`
+        `REQ Data management API is listening at http://localhost:${port}`
     )
 );
 

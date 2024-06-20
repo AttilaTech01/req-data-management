@@ -3,8 +3,9 @@ import reqRepository from '../repositories/req-database-repository';
 import { Business } from '../models/business';
 import express, { Request, Response } from 'express';
 import { after } from 'node:test';
-import MondayRepository from '../repositories/monday-repository';
+import mondayConfigService from './monday-config-service';
 import { error } from 'node:console';
+import { MondayConfig } from '../models/mondayConfig';
 
 class ReqService {
     static async getAllItems(req: Request): Promise<any> {
@@ -93,7 +94,12 @@ class ReqService {
 
     static async UpdateVerifiedLeads(): Promise<any> {
         try {
-            const verifiedLeadsObject = await mondayRepository.getMondayVerifiedLeads();
+            // DEV ONLY - Data to test fake users
+            const user1 = "Fyr";
+            const user2 = "Galilee";
+            const userConfigInfos: MondayConfig = await mondayConfigService.GetUserConfig(user1);
+
+            const verifiedLeadsObject = await mondayRepository.getMondayVerifiedLeads(userConfigInfos.leads_verification.board_id, userConfigInfos.leads_verification.column_id, [userConfigInfos.leads_verification.verified_status_value]);
             const verifiedLeads =
                 verifiedLeadsObject.data.items_page_by_column_values.items;
 
@@ -101,10 +107,10 @@ class ReqService {
                 const element = verifiedLeads[index];
                 const queryStr = `UPDATE localisation set email=${element.column_values[3].text} where id = ${element.column_values[2].text}`;
 
-                // Update the Database
-                await reqRepository.customQueryDB(queryStr);
+                // Update the Database - temporarily disabled since we are using test data for the moment
+                //await reqRepository.customQueryDB(queryStr);
                 // Update the monday status
-                await mondayRepository.UpdateVerifiedLeadStatus(element.id);
+                await mondayRepository.UpdateVerifiedLeadStatus(userConfigInfos.leads_verification.board_id, element.id, userConfigInfos.leads_verification.column_id, userConfigInfos.leads_verification.db_updated_status_value);
             }
 
             return true;
@@ -142,7 +148,7 @@ class ReqService {
     // Functions that Insert secteur to the DB and change the monday status
     static async UpdateVerifiedSecteurs(): Promise<any> {
         try {
-            const VerifObject = await MondayRepository.getMondayVerifiedSecteurs();
+            const VerifObject = await mondayRepository.getMondayVerifiedSecteurs();
             const verifiedItems = VerifObject.data.items_page_by_column_values.items;
 
             for (let index = 0; index < verifiedItems.length; index++) {
