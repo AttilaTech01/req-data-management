@@ -173,6 +173,29 @@ class MondayRepository {
 
         return true;
     }
+
+    static async ItemCreation(item): Promise<any> {
+        await axios({
+            url: 'https://api.monday.com/v2',
+            method: 'post',
+            headers: {
+                Authorization: process.env.MONDAY_ACCESS_TOKEN,
+            },
+            data: {
+                query: `
+             mutation {change_multiple_column_values(item_id:${item.id}, ${item.board_id}, column_values: \"{\\\"statut4__1\\\" : {\\\"label\\\" : \\\"DB Updaté\\\"}}\") {id}}
+          `,
+            },
+        })
+            .then((result) => {
+                console.log(result.data);
+            })
+            .catch((error) => {
+                console.log(error);
+            });
+
+        return true;
+    }
 }
 
 export default MondayRepository;

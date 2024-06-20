@@ -1,0 +1,11 @@
+{
+    "EntreLeads": {
+        "BoardId": 11111,
+        "columnValues": [
+            {
+                "ColumnId": 12321,
+                "Type": "text"
+            }
+        ]
+    }
+}
