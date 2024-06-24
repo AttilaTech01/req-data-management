@@ -27,7 +27,7 @@ export async function getUnVerifiedLeads(req, res): Promise<void> {
 
 export async function UpdateVerifiedLeads(req, res): Promise<void> {
     try {
-        const data = await reqService.UpdateVerifiedLeads();
+        const data = await reqService.UpdateVerifiedLeads(req);
         return res
             .status(200)
             .send({ message: 'items updated successfully', data: data });

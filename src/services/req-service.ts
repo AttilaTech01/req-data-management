@@ -29,9 +29,8 @@ class ReqService {
             queryStr += ';';
 
             // Sending the query
-            // console.log(queryStr);
             const result = await reqRepository.customQueryDB(queryStr);
-            //console.log(result);
+
             if (result.length === 0) {
                 return true;
             }
@@ -39,8 +38,6 @@ class ReqService {
             for (let index = 0; index < result.length; index++) {
                 const element = result[index];
 
-                console.log('THis is element');
-                console.log(element);
                 try {
                     const mondayResponse = await mondayRepository.createMondayItem(
                         element
@@ -51,12 +48,10 @@ class ReqService {
 
                     await reqRepository.customQueryDB(updateQuery);
                 } catch (error) {
-                    //console.log('Error create Item');
                     throw error;
                 }
             }
         } catch (error) {
-            // console.log(error);
             throw error;
         }
     }
@@ -92,25 +87,29 @@ class ReqService {
         }
     }
 
-    static async UpdateVerifiedLeads(): Promise<any> {
+    static async UpdateVerifiedLeads(req: Request): Promise<any> {
         try {
-            // DEV ONLY - Data to test fake users
-            const user1 = "Fyr";
-            const user2 = "Galilee";
-            const userConfigInfos: MondayConfig = await mondayConfigService.GetUserConfig(user1);
+            const { user } = req.query;
+            if (!user || typeof(user) !== "string") {
+                return false;
+            }
 
-            const verifiedLeadsObject = await mondayRepository.getMondayVerifiedLeads(userConfigInfos.leads_verification.board_id, userConfigInfos.leads_verification.column_id, [userConfigInfos.leads_verification.verified_status_value]);
+            const userConfigInfos: MondayConfig = await mondayConfigService.GetUserConfig(user);
+
+            const verifiedLeadsObject = await mondayRepository.getMondayVerifiedLeads(userConfigInfos.leads_verification.board_id, userConfigInfos.leads_verification.verification_status_column_id, [userConfigInfos.leads_verification.verified_status_value]);
             const verifiedLeads =
                 verifiedLeadsObject.data.items_page_by_column_values.items;
 
             for (let index = 0; index < verifiedLeads.length; index++) {
                 const element = verifiedLeads[index];
-                const queryStr = `UPDATE localisation set email=${element.column_values[3].text} where id = ${element.column_values[2].text}`;
+                const email = mondayConfigService.FindColumnValuefromId(element, userConfigInfos.leads_verification.email_column_id);
+                const dbId = mondayConfigService.FindColumnValuefromId(element, userConfigInfos.leads_verification.db_id_column_id);
 
-                // Update the Database - temporarily disabled since we are using test data for the moment
+                const queryStr = `UPDATE localisation set email=${email} where id = ${dbId}`;
+                // Update the Database - temporarily DISABLED since we are using test data for the moment
                 //await reqRepository.customQueryDB(queryStr);
                 // Update the monday status
-                await mondayRepository.UpdateVerifiedLeadStatus(userConfigInfos.leads_verification.board_id, element.id, userConfigInfos.leads_verification.column_id, userConfigInfos.leads_verification.db_updated_status_value);
+                //await mondayRepository.UpdateVerifiedLeadStatus(userConfigInfos.leads_verification.board_id, element.id, userConfigInfos.leads_verification.column_id, userConfigInfos.leads_verification.db_updated_status_value);
             }
 
             return true;
