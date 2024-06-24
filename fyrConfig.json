@@ -3,8 +3,24 @@
         "BoardId": 11111,
         "columnValues": [
             {
-                "ColumnId": 12321,
-                "Type": "text"
+                "MondayColumnId": 12321,
+                "MondayColumnType": "text",
+                "DbId": "email"
+            },
+            {
+                "MondayColumnId": 12321,
+                "MondayColumnType": "text",
+                "DbId": "email"
+            },
+            {
+                "MondayColumnId": 12321,
+                "MondayColumnType": "text",
+                "DbId": "email"
+            },
+            {
+                "MondayColumnId": 12321,
+                "MondayColumnType": "text",
+                "DbId": "email"
             }
         ]
     }

@@ -109,7 +109,7 @@ async def get_facebook_info(company_name):
     async with async_playwright() as p:
         try: 
             browser = await p.chromium.launch(headless=False)  # Set headless=True for headless mode
-            context = await browser.new_context()
+            context = await browser.new_context(storage_state="facebookcookie.json")
             page = await context.new_page()
 
             await page.goto(f"https://www.google.com/search?q={company_name}")
@@ -128,12 +128,6 @@ async def get_facebook_info(company_name):
                 
                 # Wait for the Facebook page to load
                 await page.wait_for_selector('body')
-
-                try:
-                    await page.click('div[aria-label="Fermer"]')
-                    print(f"Closed the popup on the Facebook page for {company_name}")
-                except:
-                    print(f"No 'Fermer' button found for {company_name}")
 
                 # Extract email 
                 page_content = await page.content()
