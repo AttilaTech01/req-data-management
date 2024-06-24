@@ -8,5 +8,14 @@
         "db_updated_status_value": "DB Updaté TEST",
         "email_column_id": "e_mail1__1",
         "db_id_column_id": "chiffres__1"
+    },
+    "new_entries": {
+        "board_id": 6864912140,
+        "group_id": "new_group42707__1",
+        "category_column_id": "statut__1",
+        "city_column_id": "texte2__1",
+        "email_column_id": "email",
+        "region_column_id": "statut6__1",
+        "secteur_column_id": "texte6__1"
     }
 }

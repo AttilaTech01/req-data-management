@@ -9,11 +9,18 @@ import { MondayConfig } from '../models/mondayConfig';
 
 class ReqService {
     static async getAllItems(req: Request): Promise<any> {
+        //TODO - test with real db
         try {
             // Creating the Query
             let queryStr =
                 "SELECT DISTINCT category.nom as 'Category', localisation.email, localisation.id, localisation.neq, localisation.secteur, localisation.adresse, localisation.ville, category.nom, mrc.nom, name.Nom FROM localisation JOIN secteurs ON localisation.secteur = secteurs.secteur_name JOIN category ON secteurs.category_id = category.category_id JOIN ville on localisation.ville = ville.ville_name JOIN mrc on ville.mrc_id = mrc.mrc_id Join name on localisation.neq = name.NEQ Where localisation.email is not null and localisation.email != 'INVALID' and localisation.migration = 0";
-            const { category, mrc, limit } = req.query;
+            const { category, mrc, limit, user } = req.query;
+
+            // Getting monday config informations based on the user
+            if (!user || typeof(user) !== "string") {
+                return false;
+            }
+            const userConfigInfos: MondayConfig = await mondayConfigService.GetUserConfig(user);
 
             if (category) {
                 // Add a case to the category name to an id
@@ -39,9 +46,7 @@ class ReqService {
                 const element = result[index];
 
                 try {
-                    const mondayResponse = await mondayRepository.createMondayItem(
-                        element
-                    );
+                    await mondayRepository.createMondayItem(userConfigInfos, element);
 
                     // Updating the status of the DB item
                     const updateQuery = ` update localisation set migration = true where id = ${element.id}`;
@@ -122,7 +127,7 @@ class ReqService {
                 // Update the Database - temporarily DISABLED since we are using test data for the moment
                 //await reqRepository.customQueryDB(queryStr);
                 // Update the monday status
-                //await mondayRepository.UpdateVerifiedLeadStatus(userConfigInfos.leads_verification.board_id, element.id, userConfigInfos.leads_verification.column_id, userConfigInfos.leads_verification.db_updated_status_value);
+                await mondayRepository.UpdateVerifiedLeadStatus(userConfigInfos.leads_verification.board_id, element.id, userConfigInfos.leads_verification.verification_status_column_id, userConfigInfos.leads_verification.db_updated_status_value);
             }
 
             return true;

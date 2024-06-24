@@ -1,9 +1,10 @@
 import axios from 'axios';
 import { query, response } from 'express';
+import { MondayConfig } from '../models/mondayConfig';
 
 class MondayRepository {
     // Returns database Object
-    static async createMondayItem(item): Promise<any> {
+    static async createMondayItem(userConfigInfos: MondayConfig, item, ): Promise<any> {
         // \\\"chiffres__1\\\":\\\"${item.telephone}\\\"
         try {
             const response = await axios({
@@ -13,17 +14,19 @@ class MondayRepository {
                     Authorization: process.env.MONDAY_ACCESS_TOKEN,
                 },
                 data: {
-                    query: ` mutation {create_item (board_id: 6803849261, group_id: \"new_group42707__1\", item_name: \"${
+                    query: ` mutation {create_item (board_id: ${userConfigInfos.new_entries.board_id}, group_id: \"${userConfigInfos.new_entries.group_id}\", item_name: \"${
                         item.Nom
-                    }\", column_values: \"{\\\"statut__1\\\":\\\"${
+                    }\", column_values: \"{\\\"${userConfigInfos.new_entries.category_column_id}\\\":\\\"${
                         item.Category
-                    }\\\", \\\"email\\\":\\\"${
+                    }\\\", \\\"${userConfigInfos.new_entries.email_column_id}\\\":\\\"${
                         item.email + ' ' + item.email
-                    }\\\", \\\"statut6__1\\\":\\\"${
+                    }\\\", \\\"${userConfigInfos.new_entries.region_column_id}\\\":\\\"${
                         item.nom
-                    }\\\", \\\"texte2__1\\\":\\\"${
+                    }\\\", \\\"${userConfigInfos.new_entries.city_column_id}\\\":\\\"${
                         item.ville
-                    }\\\", \\\"texte6__1\\\":\\\"${item.secteur}\\\"  }\") {id}} `,
+                    }\\\", \\\"${userConfigInfos.new_entries.secteur_column_id}\\\":\\\"${
+                        item.secteur
+                    }\\\"  }\") {id}} `,
                 },
             });
 
