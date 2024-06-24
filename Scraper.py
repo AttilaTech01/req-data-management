@@ -109,7 +109,7 @@ async def get_facebook_info(company_name):
     async with async_playwright() as p:
         try: 
             browser = await p.chromium.launch(headless=False)  # Set headless=True for headless mode
-            context = await browser.new_context()
+            context = await browser.new_context(storage_state="facebookcookie.json")
             page = await context.new_page()
 
             await page.goto(f"https://www.google.com/search?q={company_name}")
@@ -129,24 +129,25 @@ async def get_facebook_info(company_name):
                 # Wait for the Facebook page to load
                 await page.wait_for_selector('body')
 
-                try:
-                    await page.click('div[aria-label="Fermer"]')
-                    print(f"Closed the popup on the Facebook page for {company_name}")
-                except:
-                    print(f"No 'Fermer' button found for {company_name}")
-
-                # Extract email and phone number from the Facebook page
+                # Extract email 
                 page_content = await page.content()
 
                 email_pattern = re.compile(r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}")
 
-                # Find all matches of the email pattern in the page content
-            
-                
                 company_emails = email_pattern.findall(page_content)
-                    
-                
-                return company_emails
+
+                # Extract Phone
+
+                phone_pattern = re.compile(r"^[0-9]{3}-[0-9]{3}-[0-9]{4}$")
+                found_phone = re.findall(phone_pattern, page_content)
+
+
+                founds_infos = {
+                     "email" : company_emails,
+                     "phone": found_phone or None
+                }
+
+                return founds_infos
         # If there is no facebook links return None
             return None
 
@@ -178,7 +179,7 @@ def get_database():
 
 
 # Updating the database with the what we found
-def update_database(lead_id, email, treshold):
+def update_database(lead_id, email, treshold, telephone):
     mydb = mysql.connector.connect(
     host="localhost",
     user="root",
@@ -188,7 +189,7 @@ def update_database(lead_id, email, treshold):
         
     
     #Get the ID###############################################
-    query =f"Update localisation set email = '{email}', treshold = {treshold}  where id= {lead_id};"
+    query =f"Update localisation set email = '{email}', treshold = {treshold}, telephone = {telephone}  where id= {lead_id};"
     print(query)
     mycursor = mydb.cursor()
 
@@ -293,6 +294,8 @@ async def get_website_info(website):
                     # Search regex pattern in my html content
                     pattern = '[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
                     found_emails = re.findall(pattern, page_content)
+                    phone_pattern = re.compile(r"^[0-9]{3}-[0-9]{3}-[0-9]{4}$")
+                    found_phone = re.findall(phone_pattern, page_content)
                     # Search for contact page if the email not found
                     if not found_emails:
 
@@ -307,6 +310,8 @@ async def get_website_info(website):
 
                             pattern = '[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
                             found_emails = re.findall(pattern, contact_page_content)
+                            phone_pattern = re.compile(r"^[0-9]{3}-[0-9]{3}-[0-9]{4}$")
+                            found_phone = re.findall(phone_pattern, page_content)
                             print("Page Contact")
                             print(found_emails)
                             
@@ -330,6 +335,9 @@ async def get_website_info(website):
 
                                     pattern = '[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
                                     found_emails = re.findall(pattern, NousJoindre_page_content)
+
+                                    phone_pattern = re.compile(r"^[0-9]{3}-[0-9]{3}-[0-9]{4}$")
+                                    found_phone = re.findall(phone_pattern, page_content)
                                     print("Nous Joindre")
                                     print(found_emails)
                         
@@ -338,12 +346,23 @@ async def get_website_info(website):
             
 
                     await browser.close()
-                    return found_emails
+
+                    founds_infos = {
+                     "email" : found_emails,
+                     "phone": found_phone[0] or None
+                    }
+
+                    return founds_infos
+                   
 
                 except:
                      
-                     found_emails= None
-                     return found_emails
+                    founds_infos = {
+                     "email" : None,
+                     "phone": None
+                    }
+
+                    return founds_infos
                 
               
 
@@ -358,22 +377,22 @@ async def main():
         # try with facebook
         print(lead)
         facebook_info = await get_facebook_info(lead[3])
-
+        print(facebook_info)
         if facebook_info:
             # Process of verification
-            lead_result = await verification_email(facebook_info, lead[3])
+            lead_result = await verification_email(facebook_info["email"], lead[3])
             
             # Update database
 
-            update_database(lead[4], lead_result[0], lead_result[1])
+            update_database(lead[4], lead_result[0], lead_result[1],facebook_info["phone"] or "NULL" )
 
              
         else:
 
             website_url = await get_website_url(lead[3])
             website_info = await get_website_info(website_url)
-            lead_result = await verification_email(website_info, lead[3])
-            update_database(lead[4], lead_result[0], lead_result[1])
+            lead_result = await verification_email(website_info["email"], lead[3])
+            update_database(lead[4], lead_result[0], lead_result[1], "NULL")
             
 
     return "End of the script"

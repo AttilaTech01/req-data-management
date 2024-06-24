@@ -72,6 +72,26 @@ constraint pk_ville_mrc_id primary key(id)
 
 );
 
+create table user (
+
+id int auto_increment not null,
+name varchar(255) not null,
+
+constraint pk_user_id primary key(id)
+
+);
+
+insert into user(name) values("Groupe Fyr"),("Galilée Construction");
+
+create table migration (
+
+user_id int not null,
+localisation_id int not null,
+
+constraint fk_user_id foreign key(user_id) references user(id),
+constraint fk_localisation_id foreign key(localisation_id) references localisation(id),
+constraint pk_migration_id primary key(user_id,localisation_id)
+);
 
 
 INSERT INTO mrc Values (100, "Capitale-Nationale"),
@@ -848,3 +868,16 @@ select * from localisation order by neq asc;
 
 
 select from localisation where neq = 1143681329;
+
+
+-- Get all Items query
+
+SELECT DISTINCT c.nom as 'Category', l.email, l.id, l.neq, l.secteur, l.adresse, l.ville, c.nom, mrc.nom, n.Nom
+FROM localisation l
+LEFT JOIN migration m ON l.id = m.localisation_id
+JOIN secteurs s on l.secteur = s.secteur_name
+JOIN category c on s.category_id = c.category_id
+JOIN ville v on l.ville = v.ville_name 
+JOIN mrc on v.mrc_id = mrc.mrc_id
+JOIN name n on l.neq = n.NEQ
+WHERE m.localisation_id IS NULL and localisation.email is not null and localisation.email != 'INVALID';

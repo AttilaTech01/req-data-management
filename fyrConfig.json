@@ -1,0 +1,27 @@
+{
+    "EntreLeads": {
+        "BoardId": 11111,
+        "columnValues": [
+            {
+                "MondayColumnId": 12321,
+                "MondayColumnType": "text",
+                "DbId": "email"
+            },
+            {
+                "MondayColumnId": 12321,
+                "MondayColumnType": "text",
+                "DbId": "email"
+            },
+            {
+                "MondayColumnId": 12321,
+                "MondayColumnType": "text",
+                "DbId": "email"
+            },
+            {
+                "MondayColumnId": 12321,
+                "MondayColumnType": "text",
+                "DbId": "email"
+            }
+        ]
+    }
+}
