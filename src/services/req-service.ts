@@ -59,21 +59,34 @@ class ReqService {
     // LEADS
     // Get all the items with email=INVALID and a treshold less than 0.5 from the DB
     // Create each of them in monday board (6797870427)
-    static async getUnVerifiedLeads(): Promise<any> {
+    static async getUnVerifiedLeads(req: Request): Promise<any> {
         try {
+            const { user } = req.query;
+            if (!user || typeof(user) !== "string") {
+                return false;
+            }
+            const userConfigInfos: MondayConfig = await mondayConfigService.GetUserConfig(user);
+            
             let queryStr =
                 "SELECT DISTINCT localisation.*, category.nom, mrc.nom, name.Nom FROM localisation JOIN secteurs ON localisation.secteur = secteurs.secteur_name JOIN category ON secteurs.category_id = category.category_id JOIN ville on localisation.ville = ville.ville_name JOIN mrc on ville.mrc_id = mrc.mrc_id Join name on localisation.neq = name.NEQ Where localisation.treshold < 0.5 and localisation.email = 'INVALID' and localisation.email != 'VERIF' LIMIT 10;";
             const result = await reqRepository.customQueryDB(queryStr);
-            console.log(result);
 
             // If there is no result return sucess
             if (result.length === 0) {
                 return true;
             }
 
+            //TODO - test with real db
             for (let index = 0; index < result.length; index++) {
                 const element = result[index];
-                await mondayRepository.createUnVerifiedLead(element);
+                await mondayRepository.createUnVerifiedLead(
+                    userConfigInfos.leads_verification.board_id, 
+                    userConfigInfos.leads_verification.unverified_group_id, 
+                    element, 
+                    userConfigInfos.leads_verification.verification_status_column_id, 
+                    userConfigInfos.leads_verification.unverified_status_value, 
+                    userConfigInfos.leads_verification.db_id_column_id
+                );
 
                 // Update Email Status to VERIF
                 const updateQueryStr = `update localisation set email = "VERIF" where id= ${element.id};`;

@@ -35,7 +35,7 @@ class MondayRepository {
     }
 
     // LEADS
-    static async createUnVerifiedLead(item): Promise<any> {
+    static async createUnVerifiedLead(boardId: number, groupId: string, item, verifiedColumnId: string, verifiedColumnValue: string, dbIdColumnId: string): Promise<boolean> {
         await axios({
             url: 'https://api.monday.com/v2',
             method: 'post',
@@ -44,7 +44,7 @@ class MondayRepository {
             },
             data: {
                 query: `
-            mutation {create_item (board_id: 6797870427, group_id: \"topics\", item_name: \"${item.Nom}\", column_values: \"{\\\"status\\\":\\\"À Vérifier\\\", \\\"chiffres__1\\\":\\\"${item.id}\\\" }\" ) {id}}
+            mutation {create_item (board_id: ${boardId}, group_id: \"${groupId}\", item_name: \"${item.Nom}\", column_values: \"{\\\"${verifiedColumnId}\\\":\\\"${verifiedColumnValue}\\\", \\\"${dbIdColumnId}\\\":\\\"${item.id}\\\" }\" ) {id}}
           `,
             },
         })

@@ -15,7 +15,7 @@ export async function getAllItems(req, res): Promise<void> {
 // LEADS
 export async function getUnVerifiedLeads(req, res): Promise<void> {
     try {
-        const data = await reqService.getUnVerifiedLeads();
+        const data = await reqService.getUnVerifiedLeads(req);
         return res
             .status(200)
             .send({ message: 'items fetched successfully', data: data });

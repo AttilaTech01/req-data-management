@@ -1,9 +1,11 @@
 {
     "leads_verification": {
         "board_id": 6867573514,
+        "unverified_group_id": "topics",
+        "verification_status_column_id": "status",
+        "unverified_status_value": "À Vérifier",
         "verified_status_value": "Vérifié-2",
         "db_updated_status_value": "DB Updaté TEST",
-        "verification_status_column_id": "status",
         "email_column_id": "e_mail1__1",
         "db_id_column_id": "chiffres__1"
     }
