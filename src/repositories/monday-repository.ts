@@ -1,11 +1,11 @@
 import axios from 'axios';
-import { query, response } from 'express';
 import { MondayConfig } from '../models/mondayConfig';
 
 class MondayRepository {
     // Returns database Object
-    static async createMondayItem(userConfigInfos: MondayConfig, item, ): Promise<any> {
+    static async createMondayItem(userConfigInfos: MondayConfig, item: any): Promise<boolean> {
         // \\\"chiffres__1\\\":\\\"${item.telephone}\\\"
+        const configs = userConfigInfos.new_entries;
         try {
             const response = await axios({
                 url: 'https://api.monday.com/v2',
@@ -14,31 +14,30 @@ class MondayRepository {
                     Authorization: process.env.MONDAY_ACCESS_TOKEN,
                 },
                 data: {
-                    query: ` mutation {create_item (board_id: ${userConfigInfos.new_entries.board_id}, group_id: \"${userConfigInfos.new_entries.group_id}\", item_name: \"${
+                    query: ` mutation {create_item (board_id: ${configs.board_id}, group_id: \"${configs.group_id}\", item_name: \"${
                         item.Nom
-                    }\", column_values: \"{\\\"${userConfigInfos.new_entries.category_column_id}\\\":\\\"${
+                    }\", column_values: \"{\\\"${configs.category_column_id}\\\":\\\"${
                         item.Category
-                    }\\\", \\\"${userConfigInfos.new_entries.email_column_id}\\\":\\\"${
+                    }\\\", \\\"${configs.email_column_id}\\\":\\\"${
                         item.email + ' ' + item.email
-                    }\\\", \\\"${userConfigInfos.new_entries.region_column_id}\\\":\\\"${
+                    }\\\", \\\"${configs.region_column_id}\\\":\\\"${
                         item.nom
-                    }\\\", \\\"${userConfigInfos.new_entries.city_column_id}\\\":\\\"${
+                    }\\\", \\\"${configs.city_column_id}\\\":\\\"${
                         item.ville
-                    }\\\", \\\"${userConfigInfos.new_entries.secteur_column_id}\\\":\\\"${
+                    }\\\", \\\"${configs.secteur_column_id}\\\":\\\"${
                         item.secteur
                     }\\\"  }\") {id}} `,
                 },
             });
 
-            console.log(response);
-            return response;
+            return true;
         } catch (error) {
             throw new Error(`MondayRepository Error: ${error.message}`);
         }
     }
 
     // LEADS
-    static async createUnVerifiedLead(boardId: number, groupId: string, item, verifiedColumnId: string, verifiedColumnValue: string, dbIdColumnId: string): Promise<boolean> {
+    static async createUnVerifiedLead(boardId: number, groupId: string, item: any, verifiedColumnId: string, verifiedColumnValue: string, dbIdColumnId: string): Promise<boolean> {
         await axios({
             url: 'https://api.monday.com/v2',
             method: 'post',
