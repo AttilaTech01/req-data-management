@@ -280,7 +280,7 @@ async def get_website_info(website):
                 #If no Url is FOUND
                 if not website:
                      return None
-
+                founds_infos = {"email": "INVALID", "phone": None}  
                 try:
                     browser = await p.chromium.launch(headless=False)  # Set headless=True for headless mode
                     page =  await browser.new_page()
@@ -298,69 +298,25 @@ async def get_website_info(website):
                     found_phone = re.findall(phone_pattern, page_content)
                     # Search for contact page if the email not found
                     if not found_emails:
-
-                    # Checking with the key word contact
-
-                        page_contact = await page.get_by_role("button", name= "Contact").is_visible()
-                        if page_contact:
-                            await page.get_by_role("button", name= "Contact").click()
-                            await page.wait_for_timeout(1000)
-
-                            contact_page_content = await page.content()
-
-                            pattern = '[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
-                            found_emails = re.findall(pattern, contact_page_content)
-                            phone_pattern = re.compile(r"^[0-9]{3}-[0-9]{3}-[0-9]{4}$")
-                            found_phone = re.findall(phone_pattern, page_content)
-                            print("Page Contact")
-                            print(found_emails)
-                            
-                            
-                            
-
-                            # If no email found try Nous Joindre
-
-                            if not found_emails:
-                                
-                                
-                                if await page.get_by_role("button", name= "Nous Joindre").is_visible():
-
-
-                                    await page.get_by_role("button", name= "Nous Joindre").click()
-
-
-                                    await page.wait_for_timeout(1000)
-
-                                    NousJoindre_page_content = await page.content()
-
-                                    pattern = '[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
-                                    found_emails = re.findall(pattern, NousJoindre_page_content)
-
-                                    phone_pattern = re.compile(r"^[0-9]{3}-[0-9]{3}-[0-9]{4}$")
-                                    found_phone = re.findall(phone_pattern, page_content)
-                                    print("Nous Joindre")
-                                    print(found_emails)
                         
-                    
-                                    print(found_emails)
-            
+                            
+                            
+                        contact_button = await page.query_selector("button[name='Contact']")
+                        if contact_button and await contact_button.is_visible():
+                            await contact_button.click()
+                            await page.wait_for_timeout(1000)
+                            contact_page_content = await page.content()
+                            found_emails = re.findall(pattern, contact_page_content)
 
-                    await browser.close()
-
-                    founds_infos = {
-                     "email" : found_emails,
-                     "phone": found_phone[0] or None
-                    }
-
-                    return founds_infos
-                   
+                    if found_emails:
+                        founds_infos["email"] = found_emails
+                        founds_infos["phone"] = found_phone[0] if found_phone else None
+                        
+                        
 
                 except:
                      
-                    founds_infos = {
-                     "email" : None,
-                     "phone": None
-                    }
+                    print("There was an error")
 
                     return founds_infos
                 
@@ -391,8 +347,9 @@ async def main():
 
             website_url = await get_website_url(lead[3])
             website_info = await get_website_info(website_url)
-            lead_result = await verification_email(website_info["email"], lead[3])
-            update_database(lead[4], lead_result[0], lead_result[1], "NULL")
+            print("This iss web info",website_info)
+            #lead_result = await verification_email(website_info["email"], lead[3])
+           # update_database(lead[4], lead_result[0], lead_result[1], "NULL")
             
 
     return "End of the script"
