@@ -350,8 +350,8 @@ async def main():
             website_url = await get_website_url(lead[3])
             website_info = await get_website_info(website_url)
             print("This iss web info",website_info)
-            #lead_result = await verification_email(website_info["email"], lead[3])
-           # update_database(lead[4], lead_result[0], lead_result[1], "NULL")
+            lead_result = await verification_email(website_info["email"], lead[3])
+            update_database(lead[4], lead_result[0], lead_result[1], "NULL")
             
 
     return "End of the script"
