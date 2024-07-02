@@ -266,6 +266,7 @@ async def get_website_url(company_name):
 
                     return page_url
                 except:
+                     print("This is the URL")
                      return None
 
 
@@ -277,10 +278,11 @@ async def get_website_url(company_name):
 async def get_website_info(website):
            async with async_playwright() as p:
                 # Launch browser
+                founds_infos = {"email": "INVALID", "phone": None} 
                 #If no Url is FOUND
                 if not website:
-                     return None
-                founds_infos = {"email": "INVALID", "phone": None}  
+                     return founds_infos
+               
                 try:
                     browser = await p.chromium.launch(headless=False)  # Set headless=True for headless mode
                     page =  await browser.new_page()
