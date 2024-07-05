@@ -1,5 +1,12 @@
 import { MondayConfig } from '../models/mondayConfig';
 
+// Users with their Database ID
+// Update when adding new user
+enum User {
+    fyr = 1,
+    galilee = 2,
+}
+
 class MondayConfigService {
     static async GetUserConfig(userName: string): Promise<MondayConfig> {
         try {
@@ -8,6 +15,10 @@ class MondayConfigService {
             console.log(error);
             throw error;
         }
+    }
+
+    static GetUserDatabaseID(userName: string): number {
+        return User[userName.toLowerCase() as keyof typeof User];
     }
 
     static FindColumnValuefromId(mondayItem: any, columnId: string): string {

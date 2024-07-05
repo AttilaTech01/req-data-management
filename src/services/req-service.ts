@@ -11,15 +11,18 @@ class ReqService {
     static async getAllItems(req: Request): Promise<any> {
         //TODO - test with real db
         try {
-            // Creating the Query
-            let queryStr =
-                "SELECT DISTINCT category.nom as 'Category', localisation.email, localisation.id, localisation.neq, localisation.secteur, localisation.adresse, localisation.ville, category.nom, mrc.nom, name.Nom FROM localisation JOIN secteurs ON localisation.secteur = secteurs.secteur_name JOIN category ON secteurs.category_id = category.category_id JOIN ville on localisation.ville = ville.ville_name JOIN mrc on ville.mrc_id = mrc.mrc_id Join name on localisation.neq = name.NEQ Where localisation.email is not null and localisation.email != 'INVALID' and localisation.migration = 0";
             const { category, mrc, limit, user } = req.query;
 
             // Getting monday config informations based on the user
             if (!user || typeof(user) !== "string") {
                 return false;
             }
+            const userId = mondayConfigService.GetUserDatabaseID(user);
+
+            // Creating the Query
+            let queryStr =
+                `SELECT DISTINCT c.nom as 'Category', l.email, l.id, l.neq, l.secteur, l.adresse, l.ville, c.nom, mrc.nom, n.Nom FROM localisation l LEFT JOIN migration m ON l.id = m.localisation_id and m.user_id = ${userId} JOIN secteurs s on l.secteur = s.secteur_name JOIN category c on s.category_id = c.category_id JOIN ville v on l.ville = v.ville_name JOIN mrc on v.mrc_id = mrc.mrc_id JOIN name n on l.neq = n.NEQ WHERE m.localisation_id IS NULL and l.email is not null and l.email != 'INVALID'`;
+            
             const userConfigInfos: MondayConfig = await mondayConfigService.GetUserConfig(user);
 
             if (category) {
@@ -49,7 +52,7 @@ class ReqService {
                     await mondayRepository.createMondayItem(userConfigInfos, element);
 
                     // Updating the status of the DB item
-                    const updateQuery = ` update localisation set migration = true where id = ${element.id}`;
+                    const updateQuery = ` Insert into migration values(${userId}, ${element.id});`;
 
                     await reqRepository.customQueryDB(updateQuery);
                 } catch (error) {
