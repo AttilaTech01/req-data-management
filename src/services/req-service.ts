@@ -3,16 +3,27 @@ import reqRepository from '../repositories/req-database-repository';
 import { Business } from '../models/business';
 import express, { Request, Response } from 'express';
 import { after } from 'node:test';
-import MondayRepository from '../repositories/monday-repository';
+import mondayConfigService from './monday-config-service';
 import { error } from 'node:console';
+import { MondayConfig } from '../models/mondayConfig';
 
 class ReqService {
     static async getAllItems(req: Request): Promise<any> {
+        //TODO - test with real db
         try {
+            const { category, mrc, limit, user } = req.query;
+
+            // Getting monday config informations based on the user
+            if (!user || typeof(user) !== "string") {
+                return false;
+            }
+            const userId = mondayConfigService.GetUserDatabaseID(user);
+
             // Creating the Query
             let queryStr =
-                "SELECT DISTINCT category.nom as 'Category', localisation.email, localisation.id, localisation.neq, localisation.secteur, localisation.adresse, localisation.ville, category.nom, mrc.nom, name.Nom FROM localisation JOIN secteurs ON localisation.secteur = secteurs.secteur_name JOIN category ON secteurs.category_id = category.category_id JOIN ville on localisation.ville = ville.ville_name JOIN mrc on ville.mrc_id = mrc.mrc_id Join name on localisation.neq = name.NEQ Where localisation.email is not null and localisation.email != 'INVALID' and localisation.migration = 0";
-            const { category, mrc, limit } = req.query;
+                `SELECT DISTINCT c.nom as 'Category', l.email, l.id, l.neq, l.secteur, l.adresse, l.ville, c.nom, mrc.nom, n.Nom FROM localisation l LEFT JOIN migration m ON l.id = m.localisation_id and m.user_id = ${userId} JOIN secteurs s on l.secteur = s.secteur_name JOIN category c on s.category_id = c.category_id JOIN ville v on l.ville = v.ville_name JOIN mrc on v.mrc_id = mrc.mrc_id JOIN name n on l.neq = n.NEQ WHERE m.localisation_id IS NULL and l.email is not null and l.email != 'INVALID'`;
+            
+            const userConfigInfos: MondayConfig = await mondayConfigService.GetUserConfig(user);
 
             if (category) {
                 // Add a case to the category name to an id
@@ -28,9 +39,8 @@ class ReqService {
             queryStr += ';';
 
             // Sending the query
-            // console.log(queryStr);
             const result = await reqRepository.customQueryDB(queryStr);
-            //console.log(result);
+
             if (result.length === 0) {
                 return true;
             }
@@ -38,24 +48,18 @@ class ReqService {
             for (let index = 0; index < result.length; index++) {
                 const element = result[index];
 
-                console.log('THis is element');
-                console.log(element);
                 try {
-                    const mondayResponse = await mondayRepository.createMondayItem(
-                        element
-                    );
+                    await mondayRepository.createMondayItem(userConfigInfos, element);
 
                     // Updating the status of the DB item
-                    const updateQuery = ` update localisation set migration = true where id = ${element.id}`;
+                    const updateQuery = ` Insert into migration values(${userId}, ${element.id});`;
 
                     await reqRepository.customQueryDB(updateQuery);
                 } catch (error) {
-                    //console.log('Error create Item');
                     throw error;
                 }
             }
         } catch (error) {
-            // console.log(error);
             throw error;
         }
     }
@@ -63,21 +67,34 @@ class ReqService {
     // LEADS
     // Get all the items with email=INVALID and a treshold less than 0.5 from the DB
     // Create each of them in monday board (6797870427)
-    static async getUnVerifiedLeads(): Promise<any> {
+    static async getUnVerifiedLeads(req: Request): Promise<any> {
         try {
+            const { user } = req.query;
+            if (!user || typeof(user) !== "string") {
+                return false;
+            }
+            const userConfigInfos: MondayConfig = await mondayConfigService.GetUserConfig(user);
+            
             let queryStr =
                 "SELECT DISTINCT localisation.*, category.nom, mrc.nom, name.Nom FROM localisation JOIN secteurs ON localisation.secteur = secteurs.secteur_name JOIN category ON secteurs.category_id = category.category_id JOIN ville on localisation.ville = ville.ville_name JOIN mrc on ville.mrc_id = mrc.mrc_id Join name on localisation.neq = name.NEQ Where localisation.treshold < 0.5 and localisation.email = 'INVALID' and localisation.email != 'VERIF' LIMIT 10;";
             const result = await reqRepository.customQueryDB(queryStr);
-            console.log(result);
 
             // If there is no result return sucess
             if (result.length === 0) {
                 return true;
             }
 
+            //TODO - test with real db
             for (let index = 0; index < result.length; index++) {
                 const element = result[index];
-                await mondayRepository.createUnVerifiedLead(element);
+                await mondayRepository.createUnVerifiedLead(
+                    userConfigInfos.leads_verification.board_id, 
+                    userConfigInfos.leads_verification.unverified_group_id, 
+                    element, 
+                    userConfigInfos.leads_verification.verification_status_column_id, 
+                    userConfigInfos.leads_verification.unverified_status_value, 
+                    userConfigInfos.leads_verification.db_id_column_id
+                );
 
                 // Update Email Status to VERIF
                 const updateQueryStr = `update localisation set email = "VERIF" where id= ${element.id};`;
@@ -91,20 +108,29 @@ class ReqService {
         }
     }
 
-    static async UpdateVerifiedLeads(): Promise<any> {
+    static async UpdateVerifiedLeads(req: Request): Promise<any> {
         try {
-            const verifiedLeadsObject = await mondayRepository.getMondayVerifiedLeads();
+            const { user } = req.query;
+            if (!user || typeof(user) !== "string") {
+                return false;
+            }
+
+            const userConfigInfos: MondayConfig = await mondayConfigService.GetUserConfig(user);
+
+            const verifiedLeadsObject = await mondayRepository.getMondayVerifiedLeads(userConfigInfos.leads_verification.board_id, userConfigInfos.leads_verification.verification_status_column_id, [userConfigInfos.leads_verification.verified_status_value]);
             const verifiedLeads =
                 verifiedLeadsObject.data.items_page_by_column_values.items;
 
             for (let index = 0; index < verifiedLeads.length; index++) {
                 const element = verifiedLeads[index];
-                const queryStr = `UPDATE localisation set email=${element.column_values[3].text} where id = ${element.column_values[2].text}`;
+                const email = mondayConfigService.FindColumnValuefromId(element, userConfigInfos.leads_verification.email_column_id);
+                const dbId = mondayConfigService.FindColumnValuefromId(element, userConfigInfos.leads_verification.db_id_column_id);
 
-                // Update the Database
-                await reqRepository.customQueryDB(queryStr);
+                const queryStr = `UPDATE localisation set email=${email} where id = ${dbId}`;
+                // Update the Database - temporarily DISABLED since we are using test data for the moment
+                //await reqRepository.customQueryDB(queryStr);
                 // Update the monday status
-                await mondayRepository.UpdateVerifiedLeadStatus(element.id);
+                await mondayRepository.UpdateVerifiedLeadStatus(userConfigInfos.leads_verification.board_id, element.id, userConfigInfos.leads_verification.verification_status_column_id, userConfigInfos.leads_verification.db_updated_status_value);
             }
 
             return true;
@@ -142,7 +168,7 @@ class ReqService {
     // Functions that Insert secteur to the DB and change the monday status
     static async UpdateVerifiedSecteurs(): Promise<any> {
         try {
-            const VerifObject = await MondayRepository.getMondayVerifiedSecteurs();
+            const VerifObject = await mondayRepository.getMondayVerifiedSecteurs();
             const verifiedItems = VerifObject.data.items_page_by_column_values.items;
 
             for (let index = 0; index < verifiedItems.length; index++) {

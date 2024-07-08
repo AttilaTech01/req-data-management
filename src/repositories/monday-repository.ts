@@ -1,10 +1,11 @@
 import axios from 'axios';
-import { query, response } from 'express';
+import { MondayConfig } from '../models/mondayConfig';
 
 class MondayRepository {
     // Returns database Object
-    static async createMondayItem(item): Promise<any> {
+    static async createMondayItem(userConfigInfos: MondayConfig, item: any): Promise<boolean> {
         // \\\"chiffres__1\\\":\\\"${item.telephone}\\\"
+        const configs = userConfigInfos.new_entries;
         try {
             const response = await axios({
                 url: 'https://api.monday.com/v2',
@@ -13,29 +14,30 @@ class MondayRepository {
                     Authorization: process.env.MONDAY_ACCESS_TOKEN,
                 },
                 data: {
-                    query: ` mutation {create_item (board_id: 6803849261, group_id: \"new_group42707__1\", item_name: \"${
+                    query: ` mutation {create_item (board_id: ${configs.board_id}, group_id: \"${configs.group_id}\", item_name: \"${
                         item.Nom
-                    }\", column_values: \"{\\\"statut__1\\\":\\\"${
+                    }\", column_values: \"{\\\"${configs.category_column_id}\\\":\\\"${
                         item.Category
-                    }\\\", \\\"email\\\":\\\"${
+                    }\\\", \\\"${configs.email_column_id}\\\":\\\"${
                         item.email + ' ' + item.email
-                    }\\\", \\\"statut6__1\\\":\\\"${
+                    }\\\", \\\"${configs.region_column_id}\\\":\\\"${
                         item.nom
-                    }\\\", \\\"texte2__1\\\":\\\"${
+                    }\\\", \\\"${configs.city_column_id}\\\":\\\"${
                         item.ville
-                    }\\\", \\\"texte6__1\\\":\\\"${item.secteur}\\\"  }\") {id}} `,
+                    }\\\", \\\"${configs.secteur_column_id}\\\":\\\"${
+                        item.secteur
+                    }\\\"  }\") {id}} `,
                 },
             });
 
-            console.log(response);
-            return response;
+            return true;
         } catch (error) {
             throw new Error(`MondayRepository Error: ${error.message}`);
         }
     }
 
     // LEADS
-    static async createUnVerifiedLead(item): Promise<any> {
+    static async createUnVerifiedLead(boardId: number, groupId: string, item: any, verifiedColumnId: string, verifiedColumnValue: string, dbIdColumnId: string): Promise<boolean> {
         await axios({
             url: 'https://api.monday.com/v2',
             method: 'post',
@@ -44,7 +46,7 @@ class MondayRepository {
             },
             data: {
                 query: `
-            mutation {create_item (board_id: 6797870427, group_id: \"topics\", item_name: \"${item.Nom}\", column_values: \"{\\\"status\\\":\\\"À Vérifier\\\", \\\"chiffres__1\\\":\\\"${item.id}\\\" }\" ) {id}}
+            mutation {create_item (board_id: ${boardId}, group_id: \"${groupId}\", item_name: \"${item.Nom}\", column_values: \"{\\\"${verifiedColumnId}\\\":\\\"${verifiedColumnValue}\\\", \\\"${dbIdColumnId}\\\":\\\"${item.id}\\\" }\" ) {id}}
           `,
             },
         })
@@ -58,7 +60,7 @@ class MondayRepository {
         return true;
     }
 
-    static async getMondayVerifiedLeads(): Promise<any> {
+    static async getMondayVerifiedLeads(boardId: number, columnId: string, columnValue: string[]): Promise<any> {
         try {
             const response = await axios({
                 url: 'https://api.monday.com/v2',
@@ -67,11 +69,15 @@ class MondayRepository {
                     Authorization: process.env.MONDAY_ACCESS_TOKEN,
                 },
                 data: {
-                    query: 'query { items_page_by_column_values (board_id: 6797870427, columns: [{column_id: "status", column_values: "Vérifié"}]) { cursor items { id name column_values {id text} }}}',
-                },
+                    query: 'query ($boardId: ID!, $columnId: String!, $columnValue: [String]!) { items_page_by_column_values (board_id: $boardId, columns: [{column_id: $columnId, column_values: $columnValue}]) { cursor items { id name column_values {id text} }}}',
+                    variables: {
+                        boardId,
+                        columnId,
+                        columnValue
+                    }
+                }
             });
 
-            console.log(response.data);
             return response.data;
         } catch (error) {
             console.log(error);
@@ -79,7 +85,7 @@ class MondayRepository {
         }
     }
 
-    static async UpdateVerifiedLeadStatus(itemID): Promise<any> {
+    static async UpdateVerifiedLeadStatus(boardId: number, itemId: number, columnId: string, columnValue: string): Promise<any> {
         await axios({
             url: 'https://api.monday.com/v2',
             method: 'post',
@@ -87,7 +93,7 @@ class MondayRepository {
                 Authorization: process.env.MONDAY_ACCESS_TOKEN,
             },
             data: {
-                query: `mutation {change_multiple_column_values(item_id:${itemID}, board_id:6797870427, column_values: \"{\\\"status\\\" : {\\\"label\\\" : \\\"DB Updaté\\\"}}\") {id}}`,
+                query: `mutation {change_multiple_column_values(item_id: ${itemId}, board_id: ${boardId}, column_values: \"{\\\"${columnId}\\\" : {\\\"label\\\" : \\\"${columnValue}\\\"}}\") {id}}`,
             },
         })
             .then((result) => {
