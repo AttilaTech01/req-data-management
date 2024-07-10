@@ -35,7 +35,7 @@ async def validate_company_name(name, email):
     similarity = await similar(company_name_normalized, base_domain_normalized)
     if similarity < 0.55:
          similarity = await similar(company_name_normalized, email_name )
-    #print(similarity)
+
     return similarity  
 
 
@@ -57,7 +57,7 @@ async def email_found_formating(found_emails):
             
             
             #Look if one of the email contains the words info
-                print("This is found emails", found_emails)
+                print("Found emails", found_emails)
                 for email in found_emails:
                     # Split the Current email to get the first part
                     split_email =  email.split("@")
@@ -93,13 +93,10 @@ async def verification_email(emails, comapny_name):
     else: 
         result = await second_valdiate(comapny_name, verif_email)
         if result >= 0.55:
-            print(verif_email)
             return verif_email, result
         else: 
-
             verif_email = "INVALID"
             treshold = 0
-            print(verif_email)
             return verif_email, treshold
     
 
@@ -167,12 +164,11 @@ def get_database():
     database="leads"
     )
     # Dataabse query to get information about the leads without a email
-    query = 'Select DISTINCT localisation.telephone, localisation.email, localisation.treshold, name.Nom, localisation.id from localisation Inner JOIN name on localisation.neq = name.NEQ and localisation.email is NULL LIMIT 70;'
+    query = 'Select DISTINCT localisation.telephone, localisation.email, localisation.treshold, name.Nom, localisation.id from localisation Inner JOIN name on localisation.neq = name.NEQ and localisation.email is NULL LIMIT 30;'
 
     mycursor = mydb.cursor()
     mycursor.execute(query)
     rows= mycursor.fetchall()
-    print(rows)
     
     return rows
 
@@ -190,7 +186,7 @@ def update_database(lead_id, email, treshold, telephone):
     
     #Get the ID###############################################
     query =f"Update localisation set email = '{email}', treshold = {treshold}, telephone = {telephone}  where id= {lead_id};"
-    print(query)
+    print("5. Updating database with : ", email)
     mycursor = mydb.cursor()
 
     mycursor.execute(query)
@@ -266,7 +262,6 @@ async def get_website_url(company_name):
 
                     return page_url
                 except:
-                     print("This is the URL")
                      return None
 
 
@@ -301,26 +296,25 @@ async def get_website_info(website):
                     # Search for contact page if the email not found
                     if not found_emails:
                         
-                            
-                            
                         contact_button = await page.query_selector("button[name='Contact']")
                         if contact_button and await contact_button.is_visible():
                             await contact_button.click()
                             await page.wait_for_timeout(1000)
                             contact_page_content = await page.content()
                             found_emails = re.findall(pattern, contact_page_content)
+                            # If nothing is found in the contact
+
+                            if not found_emails:
+                                 return founds_infos
 
                     if found_emails:
                         founds_infos["email"] = found_emails
                         founds_infos["phone"] = found_phone[0] if found_phone else None
-                        
-                        
 
                 except:
-                     
                     print("There was an error")
 
-                    return founds_infos
+                return founds_infos
                 
               
 
@@ -333,9 +327,9 @@ async def main():
     for lead in leads:
         #Each lead is a list
         # try with facebook
-        print(lead)
+        print("1. Lead in process : ", lead)
         facebook_info = await get_facebook_info(lead[3])
-        print(facebook_info)
+        print("2. Facebook infos found : ",facebook_info)
         if facebook_info:
             # Process of verification
             lead_result = await verification_email(facebook_info["email"], lead[3])
@@ -348,10 +342,13 @@ async def main():
         else:
 
             website_url = await get_website_url(lead[3])
+            print("3. URL : ",website_url)
             website_info = await get_website_info(website_url)
-            print("This iss web info",website_info)
+            print("4. Web infos : ",website_info)
             lead_result = await verification_email(website_info["email"], lead[3])
             update_database(lead[4], lead_result[0], lead_result[1], "NULL")
+
+        print("-----------------------------------------------------")
             
 
     return "End of the script"
