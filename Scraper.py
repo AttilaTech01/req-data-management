@@ -38,7 +38,7 @@ def update_database(lead_id, email, treshold, telephone):
     
     #query =f"Update localisation set email = '{email}', treshold = {treshold}, telephone = {telephone}  where id= {lead_id};"
     query =f"Update localisation set courriel = '{email}', treshold = {treshold}, téléphone = {telephone}  where id= {lead_id};"
-    print(f"6. Updating database with : {email} - {treshold}")
+    print(f"6. Updating database item {lead_id} with : {email} - {treshold}")
     mycursor = mydb.cursor()
     mycursor.execute(query)
     
@@ -50,7 +50,7 @@ def update_database(lead_id, email, treshold, telephone):
 # MODULE: UTILS ######################################################################################################################################################################################
 
 # Looks for similarity (0 is 0%, 1 is 100%)
-async def isSimilar(a, b):
+def isSimilar(a, b):
     print(f'COMPARING : {a} and {b}')
     result = SequenceMatcher(None, a, b).ratio()
     print(f'RESULT : {result}')
@@ -59,7 +59,7 @@ async def isSimilar(a, b):
 
 # Formats the email if it's an array or null
 KEYWORDS = ["info", "admin", "sales", "ventes", "contact"]
-async def found_emails_formatting(found_emails):
+def found_emails_formatting(found_emails):
     print('5. Found emails: ', found_emails)
     if found_emails:    
         if isinstance(found_emails, list):       
@@ -81,20 +81,21 @@ async def found_emails_formatting(found_emails):
         return "INVALID"
 
 
-# Erases the "inc" from the company name
-async def format_name (name):
-    name = name.lower()
+# Erases "inc", "enr", " ' " from the company name
+def format_name (name):
+    name = name.lower().replace("'", '')
     list_name = name.split(" ")
-    pattern = re.compile(r'\bInc\.?\b', flags=re.IGNORECASE)
-    for x in enumerate(list_name):
-        if pattern.match(x[1]):
-            list_name.pop(x[0])
+    inc_pattern = re.compile(r'\bInc\.?\b', flags=re.IGNORECASE)
+    enr_pattern = re.compile(r'\bEnr\.?\b', flags=re.IGNORECASE)
+    for word in list_name[:]:
+        if inc_pattern.match(word) or enr_pattern.match(word):
+            list_name.remove(word)
 
     return " ".join(list_name)
 
 
 # Compares company name and email words to find similarity
-async def validate_company_name(name, email):
+def validate_company_name(name, email):
     email_split =  email.split('@')           
     email_username = email_split[0]
     email_username = email_username.lower().replace(' ', '')
@@ -104,46 +105,46 @@ async def validate_company_name(name, email):
     company_name_normalized = name.lower().replace(' ', '')
 
     # Calculate similarity
-    username_similarity = await isSimilar(company_name_normalized, email_username)
-    if username_similarity < 0.5:
-         domain_similarity = await isSimilar(company_name_normalized, email_domain)
+    username_similarity = isSimilar(company_name_normalized, email_username)
+    if username_similarity < 0.55:
+         domain_similarity = isSimilar(company_name_normalized, email_domain)
          return domain_similarity
 
     return username_similarity
 
 
 # Returns the average similarity score between the email and the company name individual words
-async def second_validate (name, email): 
+def second_validate (name, email): 
     list_result= []
     list_name = name.split(" ")
     for n in list_name:
-        result = await validate_company_name(n, email)
+        result = validate_company_name(n, email)
+        if (result >= 0.8):
+            return result
         list_result.append(result)
     average =  sum(list_result) / len(list_result)
     return average
 
 
 # Uses all the verification tools to find out if found emails match company
-async def verification_email(emails, company_name):
+def verification_email(emails, company_name):
     # Getting verified emails, might be one, might be many
-    verified_emails = await found_emails_formatting(emails)
-    print('WHAT IS IT verified_emails and type : ', verified_emails, type(verified_emails))
+    verified_emails = found_emails_formatting(emails)
+    company_name = format_name(company_name)
 
     # If only one email is returned
     if isinstance(verified_emails, str):
-        print('STR')
         if verified_emails == "INVALID":
             treshold = 0
             return verified_emails, treshold
 
-        verified_emails = await format_name(verified_emails)
-        result = await validate_company_name(company_name, verified_emails)
+        result = validate_company_name(company_name, verified_emails)
 
-        if result >= 0.50:
+        if result >= 0.55:
             return verified_emails, result
         else: 
-            result = await second_validate(company_name, verified_emails)
-            if result >= 0.50:
+            result = second_validate(company_name, verified_emails)
+            if result >= 0.45:
                 return verified_emails, result
             else: 
                 verified_emails = "INVALID"
@@ -153,18 +154,16 @@ async def verification_email(emails, company_name):
     # If many emails are returned
     best_found_treshold = 0
     for email in verified_emails:
-        print('LIST with ', email)
         if email == "INVALID":
             continue
 
-        email = await format_name(email)
-        result = await validate_company_name(company_name, email)
+        result = validate_company_name(company_name, email)
 
-        if result >= 0.50:
+        if result >= 0.55:
             return email, result
         else: 
-            result = await second_validate(company_name, email)
-            if result >= 0.50:
+            result = second_validate(company_name, email)
+            if result >= 0.45:
                 return email, result
             else:
                 if (result > best_found_treshold):
@@ -359,7 +358,7 @@ async def main():
 
         if facebook_info:
             # Process of verification
-            lead_result = await verification_email(facebook_info["email"], lead[3])
+            lead_result = verification_email(facebook_info["email"], lead[3])
             
             # Update database
             if lead_result[0] != "INVALID":
@@ -376,7 +375,7 @@ async def main():
             print("4. Web infos : ",website_info)
 
             # Process of verification
-            lead_result = await verification_email(website_info["email"], lead[3])
+            lead_result = verification_email(website_info["email"], lead[3])
             if lead_result[0] != "INVALID":
                  found += 1
 

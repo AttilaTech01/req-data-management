@@ -28,7 +28,7 @@ adresse varchar(255),
 ville 	varchar(255),
 téléphone int NULL ,
 courriel varchar(255),
-treshold int,
+treshold float,
 migration boolean DEFAULT FALSE,
 date_creation date,
 
@@ -177,7 +177,7 @@ set sql_safe_updates = 0;
 delete
 from name
 Where Nom regexp '^[0-9]{3}.';
-
+set sql_safe_updates = 1;
 
 -- Main Query
 SELECT 
