@@ -17,7 +17,7 @@ def get_leads_from_database():
     )
     
     #query = 'Select DISTINCT localisation.telephone, localisation.email, localisation.treshold, name.Nom, localisation.id from localisation JOIN name on localisation.neq = name.NEQ JOIN ville v on localisation.ville = v.ville_name JOIN mrc on v.mrc_id = mrc.mrc_id where localisation.email is NULL and mrc.mrc_id in (100,101,107,108,111,112) LIMIT 5'
-    query = 'Select DISTINCT localisation.téléphone, localisation.courriel, localisation.treshold, name.Nom, localisation.id from localisation JOIN name on localisation.neq = name.NEQ JOIN ville v on localisation.ville = v.ville_name JOIN mrc on v.mrc_id = mrc.mrc_id where localisation.courriel is NULL and mrc.mrc_id in (100,101,107,108,111,112) LIMIT 5'
+    query = 'Select DISTINCT localisation.téléphone, localisation.courriel, localisation.treshold, name.Nom, localisation.id from localisation JOIN name on localisation.neq = name.NEQ JOIN ville v on localisation.ville = v.ville_name JOIN mrc on v.mrc_id = mrc.mrc_id where localisation.courriel is NULL and mrc.mrc_id in (100,101,107,108,111,112) LIMIT 1'
 
     mycursor = mydb.cursor()
     mycursor.execute(query)
@@ -35,10 +35,11 @@ def update_database(lead_id, email, treshold, telephone):
         password="MuffinUnPeu$ec3",
         database="leads"
     )
+    rounded_treshold = round(treshold, 2)
     
-    #query =f"Update localisation set email = '{email}', treshold = {treshold}, telephone = {telephone}  where id= {lead_id};"
-    query =f"Update localisation set courriel = '{email}', treshold = {treshold}, téléphone = {telephone}  where id= {lead_id};"
-    print(f"6. Updating database item {lead_id} with : {email} - {treshold}")
+    #query =f"Update localisation set email = '{email}', treshold = {rounded_treshold}, telephone = {telephone}  where id= {lead_id};"
+    query =f"Update localisation set courriel = '{email}', treshold = {rounded_treshold}, téléphone = {telephone}  where id= {lead_id};"
+    print(f"6. Updating database item {lead_id} with : {email} - {rounded_treshold} - {telephone}")
     mycursor = mydb.cursor()
     mycursor.execute(query)
     
@@ -185,8 +186,8 @@ async def get_facebook_info(company_name):
 
             await page.goto(f"https://www.google.com/search?q={company_name}")
 
-        #wait the page 
-            await page.wait_for_selector('div#search')
+            # Waiting for google's search list
+            await page.locator('div#search').wait_for()
             page_content = await page.content()
 
             facebook_pattern = re.compile(r"https:\/\/www\.facebook\.com\/[a-zA-Z0-9\.\-\/_]+")
@@ -219,8 +220,12 @@ async def get_facebook_info(company_name):
                      "phone": found_phone or None
                 }
 
+                #Close and return
+                await browser.close()
                 return founds_infos
-        # If there is no facebook links return None
+            
+            # If there is no facebook links, close and return None
+            await browser.close()
             return None
 
         except:
@@ -235,30 +240,22 @@ async def get_website_url(company_name):
                 try:
                     browser = await p.chromium.launch(headless=False)  # Set headless=True for headless mode
                     page =  await browser.new_page()
-
                     await page.goto(f"https://www.google.com/search?q={company_name}")
-                
 
-
-            # Extraire toutes les URLs des résultats de recherche
-                    
-                    
-                    
-                    #wait for the pages to load
-                    await page.wait_for_selector('h3')
-
-                    #get the first link
-                    first_link = await page.query_selector('h3')
+                    # Extraire toutes les URLs des résultats de recherche
+                    # Wait for the page to load
+                    first_link = await page.wait_for_selector('h3.LC20lb.MBeuO.DKV0Md')
 
                     # Click on the first link
                     await first_link.click()
                         
                     # Await for the page to laod
-                    await page.wait_for_timeout(5000)
+                    await page.wait_for_timeout(3000)
 
                     page_url = page.url
                     
-
+                    #Close and return
+                    await browser.close()
                     return page_url
                 except:
                      return None
@@ -267,19 +264,16 @@ async def get_website_url(company_name):
 # get the contact email
 async def get_website_info(website):
            async with async_playwright() as p:
-                # Launch browser
                 founds_infos = {"email": "INVALID", "phone": None} 
-                #If no Url is FOUND
+                #If no url is provided
                 if not website:
                      return founds_infos
                
                 try:
                     browser = await p.chromium.launch(headless=False)  # Set headless=True for headless mode
                     page =  await browser.new_page()
-                
 
                     # Go to website and wait for page to load main page
-                    
                     await page.goto(website)
                     page_content = await page.content()
 
@@ -288,18 +282,19 @@ async def get_website_info(website):
                     found_emails = re.findall(pattern, page_content)
                     phone_pattern = re.compile(r"^[0-9]{3}-[0-9]{3}-[0-9]{4}$")
                     found_phone = re.findall(phone_pattern, page_content)
+
                     # Search for contact page if the email not found
                     if not found_emails:
-                        
                         contact_button = await page.query_selector("button[name='Contact']")
                         if contact_button and await contact_button.is_visible():
                             await contact_button.click()
                             await page.wait_for_timeout(1000)
                             contact_page_content = await page.content()
                             found_emails = re.findall(pattern, contact_page_content)
-                            # If nothing is found in the contact
 
+                            # If nothing is found in the contact
                             if not found_emails:
+                                 await browser.close()
                                  return founds_infos
 
                     if found_emails:
@@ -309,6 +304,7 @@ async def get_website_info(website):
                 except:
                     print("There was an error")
 
+                await browser.close()
                 return founds_infos
                 
 
@@ -353,6 +349,7 @@ async def main():
         print(f"1. Lead #{idx + 1} in process : {lead}")
 
         # Trying to get email from FB
+        # get_facebook_info return { "email" : company_emails, "phone": company_phone }
         facebook_info = await get_facebook_info(lead[3])
         print("2. Facebook infos found : ", facebook_info)
 
@@ -362,25 +359,25 @@ async def main():
             
             # Update database
             if lead_result[0] != "INVALID":
-                 found += 1
-            update_database(lead[4], lead_result[0], lead_result[1],facebook_info["phone"] or "NULL" )
+                found += 1
+                update_database(lead[4], lead_result[0], lead_result[1], facebook_info["phone"] or "NULL")
+                print("-----------------------------------------------------")
+                continue
              
-        else:
-            # Trying to get website from Google
-            website_url = await get_website_url(lead[3])
-            print("3. URL : ",website_url)
+        # Trying to get website from Google
+        website_url = await get_website_url(lead[3])
+        print("3. URL : ",website_url)
 
-            # Trying to get email from the found website
-            website_info = await get_website_info(website_url)
-            print("4. Web infos : ",website_info)
+        # Trying to get email from the found website
+        website_info = await get_website_info(website_url)
+        print("4. Web infos : ",website_info)
 
-            # Process of verification
-            lead_result = verification_email(website_info["email"], lead[3])
-            if lead_result[0] != "INVALID":
-                 found += 1
-
-            update_database(lead[4], lead_result[0], lead_result[1], "NULL")
-
+        # Process of verification
+        lead_result = verification_email(website_info["email"], lead[3])
+        if lead_result[0] != "INVALID":
+            found += 1
+            
+        update_database(lead[4], lead_result[0], lead_result[1], "NULL")
         print("-----------------------------------------------------")
     
     print("Total : ", total)
