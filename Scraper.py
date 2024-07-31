@@ -12,12 +12,12 @@ def get_leads_from_database():
         host="localhost",
         user="root",
         #password="root",
-        password="MuffinUnPeu$ec3",
+        password="root",
         database="leads"
     )
     
-    #query = 'Select DISTINCT localisation.telephone, localisation.email, localisation.treshold, name.Nom, localisation.id from localisation JOIN name on localisation.neq = name.NEQ JOIN ville v on localisation.ville = v.ville_name JOIN mrc on v.mrc_id = mrc.mrc_id where localisation.email is NULL and mrc.mrc_id in (100,101,107,108,111,112) LIMIT 5'
-    query = 'Select DISTINCT localisation.téléphone, localisation.courriel, localisation.treshold, name.Nom, localisation.id from localisation JOIN name on localisation.neq = name.NEQ JOIN ville v on localisation.ville = v.ville_name JOIN mrc on v.mrc_id = mrc.mrc_id where localisation.courriel is NULL and mrc.mrc_id in (100,101,107,108,111,112) LIMIT 1'
+    query = 'Select DISTINCT localisation.telephone, localisation.email, localisation.treshold, name.Nom, localisation.id from localisation JOIN name on localisation.neq = name.NEQ JOIN ville v on localisation.ville = v.ville_name JOIN mrc on v.mrc_id = mrc.mrc_id where localisation.email is NULL and mrc.mrc_id in (100,101,107,108,111,112) LIMIT 5'
+    #query = 'Select DISTINCT localisation.téléphone, localisation.courriel, localisation.treshold, name.Nom, localisation.id from localisation JOIN name on localisation.neq = name.NEQ JOIN ville v on localisation.ville = v.ville_name JOIN mrc on v.mrc_id = mrc.mrc_id where localisation.courriel is NULL and mrc.mrc_id in (100,101,107,108,111,112) LIMIT 1'
 
     mycursor = mydb.cursor()
     mycursor.execute(query)
@@ -32,13 +32,13 @@ def update_database(lead_id, email, treshold, telephone):
         host="localhost",
         user="root",
         #password="root",
-        password="MuffinUnPeu$ec3",
+        password="root",
         database="leads"
     )
     rounded_treshold = round(treshold, 2)
     
-    #query =f"Update localisation set email = '{email}', treshold = {rounded_treshold}, telephone = {telephone}  where id= {lead_id};"
-    query =f"Update localisation set courriel = '{email}', treshold = {rounded_treshold}, téléphone = {telephone}  where id= {lead_id};"
+    query =f"Update localisation set email = '{email}', treshold = {rounded_treshold}, telephone = {telephone}  where id= {lead_id};"
+    #query =f"Update localisation set courriel = '{email}', treshold = {rounded_treshold}, téléphone = {telephone}  where id= {lead_id};"
     print(f"6. Updating database item {lead_id} with : {email} - {rounded_treshold} - {telephone}")
     mycursor = mydb.cursor()
     mycursor.execute(query)
@@ -242,21 +242,28 @@ async def get_website_url(company_name):
                     page =  await browser.new_page()
                     await page.goto(f"https://www.google.com/search?q={company_name}")
 
+                  #Looks for Google Profile
+                    button = await page.get_by_role("button", name="Site Web").is_visible()
+                    if button:
+                        await page.get_by_role("button", name="Site Web").click(timeout=2000)
+                        pageUrl = page.url
+                        return pageUrl
+
                     # Extraire toutes les URLs des résultats de recherche
-                    # Wait for the page to load
-                    first_link = await page.wait_for_selector('h3.LC20lb.MBeuO.DKV0Md')
-
-                    # Click on the first link
-                    await first_link.click()
-                        
-                    # Await for the page to laod
-                    await page.wait_for_timeout(3000)
-
-                    page_url = page.url
                     
-                    #Close and return
-                    await browser.close()
-                    return page_url
+                    await page.wait_for_selector('h3')
+                    links = await page.query_selector_all('h3')
+
+                    # Looks in the links if links contains Pages Jaunes
+                    website_to_skip = ["LinkedIn", "Pages Jaunes", "YellowPages.ca", "Canada 411", "PagesJaunes.ca"]
+                    for link in links:
+                        if any(keyword in await link.inner_text() for keyword in website_to_skip):
+                              continue
+                        await link.click()
+                        pageUrl = page.url
+                        print(pageUrl)
+                        await browser.close()
+                        return pageUrl
                 except:
                      return None
 
