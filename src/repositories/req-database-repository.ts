@@ -1,10 +1,10 @@
 import mysql from 'mysql2/promise';
-import { Business } from '../models/business';
+import { Business, convertToBusiness } from '../models/business';
 import querystring from 'querystring';
 import { query } from 'express';
 
 class ReqDatabaseRepository {
-    static async customQueryDB(queryStr): Promise<any> {
+    static async customQueryDB(queryStr): Promise<Business[]> {
         let itemsToReturn: Business[] = [];
 
         let connection = await mysql.createConnection({
@@ -20,7 +20,7 @@ class ReqDatabaseRepository {
             let index: number = 0;
             while (index >= 0) {
                 if (results[index]) {
-                    itemsToReturn.push(results[index]);
+                    itemsToReturn.push(convertToBusiness(results[index]));
                     index++;
                 } else {
                     index = -1;

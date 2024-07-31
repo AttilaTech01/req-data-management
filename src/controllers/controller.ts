@@ -7,8 +7,7 @@ export async function getAllItems(req, res): Promise<void> {
             .status(200)
             .send({ message: 'items fetched successfully', data: data });
     } catch (err) {
-        console.error(err);
-        return res.status(500).send({ message: 'internal server error', error: err });
+        return res.status(500).send(err.message);
     }
 }
 
