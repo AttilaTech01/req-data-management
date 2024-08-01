@@ -2,104 +2,179 @@ import asyncio
 from playwright.async_api import async_playwright
 import re
 from difflib import SequenceMatcher
-#import dns.resolver
 import mysql.connector
 
+# MODULE: DATABASE ######################################################################################################################################################################################
 
-async def similar(a, b):
-    return SequenceMatcher(None, a, b).ratio()
-            
+# Queries the database to get leads without a email
+def get_leads_from_database():
+    mydb = mysql.connector.connect(
+        host="localhost",
+        user="root",
+        #password="root",
+        password="root",
+        database="leads"
+    )
+    
+    query = 'Select DISTINCT localisation.telephone, localisation.email, localisation.treshold, name.Nom, localisation.id from localisation JOIN name on localisation.neq = name.NEQ JOIN ville v on localisation.ville = v.ville_name JOIN mrc on v.mrc_id = mrc.mrc_id where localisation.email is NULL and mrc.mrc_id in (100,101,107,108,111,112) LIMIT 5'
+    #query = 'Select DISTINCT localisation.téléphone, localisation.courriel, localisation.treshold, name.Nom, localisation.id from localisation JOIN name on localisation.neq = name.NEQ JOIN ville v on localisation.ville = v.ville_name JOIN mrc on v.mrc_id = mrc.mrc_id where localisation.courriel is NULL and mrc.mrc_id in (100,101,107,108,111,112) LIMIT 1'
 
-async def format_name (name):
-    name = name.lower()
+    mycursor = mydb.cursor()
+    mycursor.execute(query)
+    rows= mycursor.fetchall()
+    
+    return rows
+
+
+# Updating the database with found values
+def update_database(lead_id, email, treshold, telephone):
+    mydb = mysql.connector.connect(
+        host="localhost",
+        user="root",
+        #password="root",
+        password="root",
+        database="leads"
+    )
+    rounded_treshold = round(treshold, 2)
+    
+    query =f"Update localisation set email = '{email}', treshold = {rounded_treshold}, telephone = {telephone}  where id= {lead_id};"
+    #query =f"Update localisation set courriel = '{email}', treshold = {rounded_treshold}, téléphone = {telephone}  where id= {lead_id};"
+    print(f"6. Updating database item {lead_id} with : {email} - {rounded_treshold} - {telephone}")
+    mycursor = mydb.cursor()
+    mycursor.execute(query)
+    
+    mydb.commit()
+    mydb.close()
+    return
+
+
+# MODULE: UTILS ######################################################################################################################################################################################
+
+# Looks for similarity (0 is 0%, 1 is 100%)
+def isSimilar(a, b):
+    print(f'COMPARING : {a} and {b}')
+    result = SequenceMatcher(None, a, b).ratio()
+    print(f'RESULT : {result}')
+    return result
+
+
+# Formats the email if it's an array or null
+KEYWORDS = ["info", "admin", "sales", "ventes", "contact"]
+def found_emails_formatting(found_emails):
+    print('5. Found emails: ', found_emails)
+    if found_emails:    
+        if isinstance(found_emails, list):       
+            #Look if one of the email contains the keywords info or admin or sales or contact
+            for email in found_emails:
+                split_email =  email.split("@")
+                if any(substring in split_email[0] for substring in KEYWORDS):
+                    return email
+                if any(substring in split_email[1] for substring in KEYWORDS):
+                    return email
+                
+            # If no email found with keywords, return the first 3 emails
+            return found_emails[:3]
+        
+        # If it's not a list but a str
+        else:
+            return found_emails
+    else:
+        return "INVALID"
+
+
+# Erases "inc", "enr", " ' " from the company name
+def format_name (name):
+    name = name.lower().replace("'", '')
     list_name = name.split(" ")
-    pattern = re.compile(r'\bInc\.?\b', flags=re.IGNORECASE)
-    for x in enumerate(list_name):
-        if pattern.match(x[1]):
-            list_name.pop(x[0])
+    inc_pattern = re.compile(r'\bInc\.?\b', flags=re.IGNORECASE)
+    enr_pattern = re.compile(r'\bEnr\.?\b', flags=re.IGNORECASE)
+    for word in list_name[:]:
+        if inc_pattern.match(word) or enr_pattern.match(word):
+            list_name.remove(word)
 
     return " ".join(list_name)
 
 
-async def validate_company_name(name, email):
+# Compares company name and email words to find similarity
+def validate_company_name(name, email):
     email_split =  email.split('@')           
-    base_domain = email_split[0]
-    email_name = email_split[1]
-    base_domain = base_domain.split('.')[0]
+    email_username = email_split[0]
+    email_username = email_username.lower().replace(' ', '')
+    email_domain = email_split[1].split('.')[0]
 
-    # Normalize company name and domain for comparison
+    # Normalize company name for comparison
     company_name_normalized = name.lower().replace(' ', '')
-    base_domain_normalized = base_domain.lower().replace(' ', '')
 
     # Calculate similarity
-    similarity = await similar(company_name_normalized, base_domain_normalized)
-    if similarity < 0.55:
-         similarity = await similar(company_name_normalized, email_name )
+    username_similarity = isSimilar(company_name_normalized, email_username)
+    if username_similarity < 0.55:
+         domain_similarity = isSimilar(company_name_normalized, email_domain)
+         return domain_similarity
 
-    return similarity  
+    return username_similarity
 
 
-async def second_valdiate (name, company_email): 
+# Returns the average similarity score between the email and the company name individual words
+def second_validate (name, email): 
     list_result= []
     list_name = name.split(" ")
     for n in list_name:
-        result = await validate_company_name(n, company_email)
+        result = validate_company_name(n, email)
+        if (result >= 0.8):
+            return result
         list_result.append(result)
     average =  sum(list_result) / len(list_result)
     return average
 
 
-# function to format the email if it's an array or a object NONE
-async def email_found_formating(found_emails):
-    if found_emails:    
-        if isinstance(found_emails, list):
+# Uses all the verification tools to find out if found emails match company
+def verification_email(emails, company_name):
+    # Getting verified emails, might be one, might be many
+    verified_emails = found_emails_formatting(emails)
+    company_name = format_name(company_name)
 
-            
-            
-            #Look if one of the email contains the words info
-                print("Found emails", found_emails)
-                for email in found_emails:
-                    # Split the Current email to get the first part
-                    split_email =  email.split("@")
-                    # look if one on the emails contains this
-                    if split_email[0] == "info" or "admin":
-                        return email
-
-                # If no email found with key words return the first email     
-                return found_emails[0]
-        
-        # If there it's not a list but a str
-        else:
-            return found_emails
-    else:
-        found_emails = "INVALID"
-        return found_emails
-
-# One big verification function to match all of them in one
-async def verification_email(emails, comapny_name):
-    # Sort the email 
-    verif_email = await email_found_formating(emails)
-    if verif_email == "INVALID":
-        treshold = 0
-        return verif_email, treshold
-
-    verif_email = await format_name(verif_email)
-
-    result = await validate_company_name(comapny_name, verif_email)
-
-    if result >= 0.55:
-
-        return verif_email, result
-    else: 
-        result = await second_valdiate(comapny_name, verif_email)
-        if result >= 0.55:
-            return verif_email, result
-        else: 
-            verif_email = "INVALID"
+    # If only one email is returned
+    if isinstance(verified_emails, str):
+        if verified_emails == "INVALID":
             treshold = 0
-            return verif_email, treshold
+            return verified_emails, treshold
+
+        result = validate_company_name(company_name, verified_emails)
+
+        if result >= 0.55:
+            return verified_emails, result
+        else: 
+            result = second_validate(company_name, verified_emails)
+            if result >= 0.45:
+                return verified_emails, result
+            else: 
+                verified_emails = "INVALID"
+                treshold = result
+                return verified_emails, treshold
+
+    # If many emails are returned
+    best_found_treshold = 0
+    for email in verified_emails:
+        if email == "INVALID":
+            continue
+
+        result = validate_company_name(company_name, email)
+
+        if result >= 0.55:
+            return email, result
+        else: 
+            result = second_validate(company_name, email)
+            if result >= 0.45:
+                return email, result
+            else:
+                if (result > best_found_treshold):
+                    best_found_treshold = result
+                continue
+    
+    return "INVALID", best_found_treshold
     
 
+# MODULE: FACEBOOK SCRAPER ######################################################################################################################################################################################
 
 # get the Facebook info
 async def get_facebook_info(company_name):
@@ -111,8 +186,8 @@ async def get_facebook_info(company_name):
 
             await page.goto(f"https://www.google.com/search?q={company_name}")
 
-        #wait the page 
-            await page.wait_for_selector('div#search')
+            # Waiting for google's search list
+            await page.locator('div#search').wait_for()
             page_content = await page.content()
 
             facebook_pattern = re.compile(r"https:\/\/www\.facebook\.com\/[a-zA-Z0-9\.\-\/_]+")
@@ -132,9 +207,10 @@ async def get_facebook_info(company_name):
                 email_pattern = re.compile(r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}")
 
                 company_emails = email_pattern.findall(page_content)
+                if len(company_emails) < 1:
+                     return None
 
                 # Extract Phone
-
                 phone_pattern = re.compile(r"^[0-9]{3}-[0-9]{3}-[0-9]{4}$")
                 found_phone = re.findall(phone_pattern, page_content)
 
@@ -144,63 +220,103 @@ async def get_facebook_info(company_name):
                      "phone": found_phone or None
                 }
 
+                #Close and return
+                await browser.close()
                 return founds_infos
-        # If there is no facebook links return None
+            
+            # If there is no facebook links, close and return None
+            await browser.close()
             return None
 
         except:
              return None
 
 
+# MODULE: GOOGLE SCRAPER ######################################################################################################################################################################################
+
+# Function to get the website url
+async def get_website_url(company_name):
+           async with async_playwright() as p:
+                try:
+                    browser = await p.chromium.launch(headless=False)  # Set headless=True for headless mode
+                    page =  await browser.new_page()
+                    await page.goto(f"https://www.google.com/search?q={company_name}")
+
+                  #Looks for Google Profile
+                    button = await page.get_by_role("button", name="Site Web").is_visible()
+                    if button:
+                        await page.get_by_role("button", name="Site Web").click(timeout=2000)
+                        pageUrl = page.url
+                        return pageUrl
+
+                    # Extraire toutes les URLs des résultats de recherche
+                    
+                    await page.wait_for_selector('h3')
+                    links = await page.query_selector_all('h3')
+
+                    # Looks in the links if links contains Pages Jaunes
+                    website_to_skip = ["LinkedIn", "Pages Jaunes", "YellowPages.ca", "Canada 411", "PagesJaunes.ca"]
+                    for link in links:
+                        if any(keyword in await link.inner_text() for keyword in website_to_skip):
+                              continue
+                        await link.click()
+                        pageUrl = page.url
+                        print(pageUrl)
+                        await browser.close()
+                        return pageUrl
+                except:
+                     return None
 
 
+# get the contact email
+async def get_website_info(website):
+           async with async_playwright() as p:
+                founds_infos = {"email": "INVALID", "phone": None} 
+                #If no url is provided
+                if not website:
+                     return founds_infos
+               
+                try:
+                    browser = await p.chromium.launch(headless=False)  # Set headless=True for headless mode
+                    page =  await browser.new_page()
 
+                    # Go to website and wait for page to load main page
+                    await page.goto(website)
+                    page_content = await page.content()
 
-def get_database():
-    mydb = mysql.connector.connect(
-   host="localhost",
-    user="root",
-    password="root",
-    database="leads"
-    )
-    # Dataabse query to get information about the leads without a email
-    query = 'Select DISTINCT localisation.telephone, localisation.email, localisation.treshold, name.Nom, localisation.id from localisation Inner JOIN name on localisation.neq = name.NEQ and localisation.email is NULL LIMIT 30;'
+                    # Search regex pattern in my html content
+                    pattern = '[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
+                    found_emails = re.findall(pattern, page_content)
+                    phone_pattern = re.compile(r"^[0-9]{3}-[0-9]{3}-[0-9]{4}$")
+                    found_phone = re.findall(phone_pattern, page_content)
 
-    mycursor = mydb.cursor()
-    mycursor.execute(query)
-    rows= mycursor.fetchall()
-    
-    return rows
+                    # Search for contact page if the email not found
+                    if not found_emails:
+                        contact_button = await page.query_selector("button[name='Contact']")
+                        if contact_button and await contact_button.is_visible():
+                            await contact_button.click()
+                            await page.wait_for_timeout(1000)
+                            contact_page_content = await page.content()
+                            found_emails = re.findall(pattern, contact_page_content)
 
+                            # If nothing is found in the contact
+                            if not found_emails:
+                                 await browser.close()
+                                 return founds_infos
 
+                    if found_emails:
+                        founds_infos["email"] = found_emails
+                        founds_infos["phone"] = found_phone[0] if found_phone else None
 
-# Updating the database with the what we found
-def update_database(lead_id, email, treshold, telephone):
-    mydb = mysql.connector.connect(
-    host="localhost",
-    user="root",
-    password="root",
-    database="leads"
-    )
-        
-    
-    #Get the ID###############################################
-    query =f"Update localisation set email = '{email}', treshold = {treshold}, telephone = {telephone}  where id= {lead_id};"
-    print("5. Updating database with : ", email)
-    mycursor = mydb.cursor()
+                except:
+                    print("There was an error")
 
-    mycursor.execute(query)
-    
-    mydb.commit()
-    mydb.close()
-    return
-
-
-
-
-    # List of companies to search for
+                await browser.close()
+                return founds_infos
+                
 
 '''
+# List of companies to search for
 # Old version
 async def get_website_contact(website):
            async with async_playwright() as p:
@@ -224,137 +340,60 @@ async def get_website_contact(website):
 
                 await browser.close()
                 return email_home, email
-'''
+'''    
 
 
-
-
-# Function to get the website url
-
-async def get_website_url(company_name):
-           async with async_playwright() as p:
-                try:
-                    browser = await p.chromium.launch(headless=False)  # Set headless=True for headless mode
-                    page =  await browser.new_page()
-
-                    await page.goto(f"https://www.google.com/search?q={company_name}")
-                
-
-
-            # Extraire toutes les URLs des résultats de recherche
-                    
-                    
-                    
-                    #wait for the pages to load
-                    await page.wait_for_selector('h3')
-
-                    #get the first link
-                    first_link = await page.query_selector('h3')
-
-                    # Click on the first link
-                    await first_link.click()
-                        
-                    # Await for the page to laod
-                    await page.wait_for_timeout(5000)
-
-                    page_url = page.url
-                    
-
-                    return page_url
-                except:
-                     return None
-
-
-
-
-
-
-# get the contact email
-async def get_website_info(website):
-           async with async_playwright() as p:
-                # Launch browser
-                founds_infos = {"email": "INVALID", "phone": None} 
-                #If no Url is FOUND
-                if not website:
-                     return founds_infos
-               
-                try:
-                    browser = await p.chromium.launch(headless=False)  # Set headless=True for headless mode
-                    page =  await browser.new_page()
-                
-
-                    # Go to website and wait for page to load main page
-                    
-                    await page.goto(website)
-                    page_content = await page.content()
-
-                    # Search regex pattern in my html content
-                    pattern = '[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
-                    found_emails = re.findall(pattern, page_content)
-                    phone_pattern = re.compile(r"^[0-9]{3}-[0-9]{3}-[0-9]{4}$")
-                    found_phone = re.findall(phone_pattern, page_content)
-                    # Search for contact page if the email not found
-                    if not found_emails:
-                        
-                        contact_button = await page.query_selector("button[name='Contact']")
-                        if contact_button and await contact_button.is_visible():
-                            await contact_button.click()
-                            await page.wait_for_timeout(1000)
-                            contact_page_content = await page.content()
-                            found_emails = re.findall(pattern, contact_page_content)
-                            # If nothing is found in the contact
-
-                            if not found_emails:
-                                 return founds_infos
-
-                    if found_emails:
-                        founds_infos["email"] = found_emails
-                        founds_infos["phone"] = found_phone[0] if found_phone else None
-
-                except:
-                    print("There was an error")
-
-                return founds_infos
-                
-              
-
+########################################################################################################################################
 
 async def main():
-
-
-    leads = get_database()
+    leads = get_leads_from_database()
+    total = len(leads)
+    found = 0
     
-    for lead in leads:
-        #Each lead is a list
-        # try with facebook
-        print("1. Lead in process : ", lead)
+    # Looping over our database leads result
+    # Each lead is an array of values
+    for idx, lead in enumerate(leads):
+        print(f"1. Lead #{idx + 1} in process : {lead}")
+
+        # Trying to get email from FB
+        # get_facebook_info return { "email" : company_emails, "phone": company_phone }
         facebook_info = await get_facebook_info(lead[3])
-        print("2. Facebook infos found : ",facebook_info)
+        print("2. Facebook infos found : ", facebook_info)
+
         if facebook_info:
             # Process of verification
-            lead_result = await verification_email(facebook_info["email"], lead[3])
+            lead_result = verification_email(facebook_info["email"], lead[3])
             
             # Update database
-
-            update_database(lead[4], lead_result[0], lead_result[1],facebook_info["phone"] or "NULL" )
-
+            if lead_result[0] != "INVALID":
+                found += 1
+                update_database(lead[4], lead_result[0], lead_result[1], facebook_info["phone"] or "NULL")
+                print("-----------------------------------------------------")
+                continue
              
-        else:
+        # Trying to get website from Google
+        website_url = await get_website_url(lead[3])
+        print("3. URL : ",website_url)
 
-            website_url = await get_website_url(lead[3])
-            print("3. URL : ",website_url)
-            website_info = await get_website_info(website_url)
-            print("4. Web infos : ",website_info)
-            lead_result = await verification_email(website_info["email"], lead[3])
-            update_database(lead[4], lead_result[0], lead_result[1], "NULL")
+        # Trying to get email from the found website
+        website_info = await get_website_info(website_url)
+        print("4. Web infos : ",website_info)
 
-        print("-----------------------------------------------------")
+        # Process of verification
+        lead_result = verification_email(website_info["email"], lead[3])
+        if lead_result[0] != "INVALID":
+            found += 1
             
-
+        update_database(lead[4], lead_result[0], lead_result[1], "NULL")
+        print("-----------------------------------------------------")
+    
+    print("Total : ", total)
+    print("Wins : ", found)
+    print("Win % : ", found * 100 / total)
     return "End of the script"
 
-# Run the script
 
+# Run the script
 asyncio.run(main())
 
 
