@@ -16,6 +16,7 @@ export interface MondayConfig {
         city_column_id: string,
         email_column_id: string,
         region_column_id: string,
-        secteur_column_id: string
+        secteur_column_id: string,
+        foundation_date_column_id: string
     }
 }

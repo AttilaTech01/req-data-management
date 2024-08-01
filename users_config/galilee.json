@@ -16,6 +16,7 @@
         "city_column_id": "texte2__1",
         "email_column_id": "email",
         "region_column_id": "statut6__1",
-        "secteur_column_id": "texte6__1"
+        "secteur_column_id": "texte6__1",
+        "foundation_date_column_id": "date__1"
     }
 }

@@ -1,10 +1,11 @@
 import axios from 'axios';
+import { Business } from '../models/business';
 import { MondayConfig } from '../models/mondayConfig';
+import { isMondayErrorResponse } from '../models/mondayResponse';
 
 class MondayRepository {
     // Returns database Object
-    static async createMondayItem(userConfigInfos: MondayConfig, item: any): Promise<boolean> {
-        // \\\"chiffres__1\\\":\\\"${item.telephone}\\\"
+    static async createMondayItem(userConfigInfos: MondayConfig, item: Business): Promise<boolean> {
         const configs = userConfigInfos.new_entries;
         try {
             const response = await axios({
@@ -15,20 +16,26 @@ class MondayRepository {
                 },
                 data: {
                     query: ` mutation {create_item (board_id: ${configs.board_id}, group_id: \"${configs.group_id}\", item_name: \"${
-                        item.Nom
+                        item.nom
                     }\", column_values: \"{\\\"${configs.category_column_id}\\\":\\\"${
-                        item.Category
+                        item.category
                     }\\\", \\\"${configs.email_column_id}\\\":\\\"${
                         item.email + ' ' + item.email
                     }\\\", \\\"${configs.region_column_id}\\\":\\\"${
-                        item.nom
+                        item.mrc
                     }\\\", \\\"${configs.city_column_id}\\\":\\\"${
                         item.ville
                     }\\\", \\\"${configs.secteur_column_id}\\\":\\\"${
                         item.secteur
+                    }\\\", \\\"${configs.foundation_date_column_id}\\\":\\\"${
+                        item.date_creation
                     }\\\"  }\") {id}} `,
                 },
             });
+
+            if (isMondayErrorResponse(response.data)) {
+                throw new Error(response.data.error_message);
+            }
 
             return true;
         } catch (error) {
