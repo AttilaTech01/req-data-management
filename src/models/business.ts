@@ -13,7 +13,7 @@ export interface Business {
 
 interface DatabaseBusiness {
     Category: string;
-    courriel: string;
+    email: string;
     id: number;
     neq: number;
     secteur: string;
@@ -34,7 +34,7 @@ export function convertToBusiness(data: DatabaseBusiness): Business {
         ville: data.ville,
         mrc: data.nom.trim(),
         category: data.Category,
-        email: data.courriel,
+        email: data.email,
         date_creation: data.date_creation.toISOString().slice(0,10)
     };
 }

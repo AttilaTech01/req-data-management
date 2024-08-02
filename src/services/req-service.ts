@@ -1,15 +1,11 @@
 import mondayRepository from '../repositories/monday-repository';
 import reqRepository from '../repositories/req-database-repository';
-import { Business } from '../models/business';
-import express, { Request, Response } from 'express';
-import { after } from 'node:test';
+import { Request } from 'express';
 import mondayConfigService from './monday-config-service';
-import { error } from 'node:console';
 import { MondayConfig } from '../models/mondayConfig';
 
 class ReqService {
     static async getAllItems(req: Request): Promise<any> {
-        //TODO - test with real db
         try {
             const { category, mrc, limit, user } = req.query;
 
@@ -69,11 +65,13 @@ class ReqService {
     // Create each of them in monday board (6797870427)
     static async getUnVerifiedLeads(req: Request): Promise<any> {
         try {
+            /* USER CHOICE DEACTIVATED
             const { user } = req.query;
             if (!user || typeof(user) !== "string") {
                 return false;
             }
-            const userConfigInfos: MondayConfig = await mondayConfigService.GetUserConfig(user);
+            */
+            const userConfigInfos: MondayConfig = await mondayConfigService.GetUserConfig('fyr');
             
             let queryStr =
                 "SELECT DISTINCT localisation.*, category.nom, mrc.nom, name.Nom FROM localisation JOIN secteurs ON localisation.secteur = secteurs.secteur_name JOIN category ON secteurs.category_id = category.category_id JOIN ville on localisation.ville = ville.ville_name JOIN mrc on ville.mrc_id = mrc.mrc_id Join name on localisation.neq = name.NEQ Where localisation.treshold < 0.5 and localisation.email = 'INVALID' and localisation.email != 'VERIF' LIMIT 10;";
@@ -110,12 +108,13 @@ class ReqService {
 
     static async UpdateVerifiedLeads(req: Request): Promise<any> {
         try {
+            /* USER CHOICE DEACTIVATED
             const { user } = req.query;
             if (!user || typeof(user) !== "string") {
                 return false;
             }
-
-            const userConfigInfos: MondayConfig = await mondayConfigService.GetUserConfig(user);
+            */
+            const userConfigInfos: MondayConfig = await mondayConfigService.GetUserConfig('fyr');
 
             const verifiedLeadsObject = await mondayRepository.getMondayVerifiedLeads(userConfigInfos.leads_verification.board_id, userConfigInfos.leads_verification.verification_status_column_id, [userConfigInfos.leads_verification.verified_status_value]);
             const verifiedLeads =
@@ -126,9 +125,9 @@ class ReqService {
                 const email = mondayConfigService.FindColumnValuefromId(element, userConfigInfos.leads_verification.email_column_id);
                 const dbId = mondayConfigService.FindColumnValuefromId(element, userConfigInfos.leads_verification.db_id_column_id);
 
-                const queryStr = `UPDATE localisation set email=${email} where id = ${dbId}`;
+                const queryStr = `UPDATE localisation set email="${email}" where id = ${dbId}`;
                 // Update the Database - temporarily DISABLED since we are using test data for the moment
-                //await reqRepository.customQueryDB(queryStr);
+                await reqRepository.customQueryDB(queryStr);
                 // Update the monday status
                 await mondayRepository.UpdateVerifiedLeadStatus(userConfigInfos.leads_verification.board_id, element.id, userConfigInfos.leads_verification.verification_status_column_id, userConfigInfos.leads_verification.db_updated_status_value);
             }
