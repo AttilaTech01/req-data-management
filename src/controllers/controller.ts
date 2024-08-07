@@ -49,9 +49,9 @@ export async function getUnVerifiedSecteurs(req, res): Promise<void> {
     }
 }
 
-export async function UpdateNonVerifSecteurs(req, res): Promise<void> {
+export async function createVerifiedSecteurs(req, res): Promise<void> {
     try {
-        const data = await reqService.UpdateVerifiedSecteurs();
+        const data = await reqService.createVerifiedSecteurs();
         return res
             .status(200)
             .send({ message: 'items updated successfully', data: data });

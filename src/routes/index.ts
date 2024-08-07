@@ -3,7 +3,7 @@ import {
     getAllItems,
     getUnVerifiedSecteurs,
     getUnVerifiedLeads,
-    UpdateNonVerifSecteurs,
+    createVerifiedSecteurs,
     UpdateVerifiedLeads,
 } from '../controllers/controller';
 
@@ -38,7 +38,7 @@ router.get('/get-unverified-secteur', (req, res) => {
 });
 
 router.post('/create-verif-secteur', (req, res) => {
-    UpdateNonVerifSecteurs(req, res);
+    createVerifiedSecteurs(req, res);
 });
 
 // FUNCTIONS

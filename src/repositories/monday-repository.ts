@@ -1,7 +1,9 @@
 import axios from 'axios';
-import { Business } from '../models/business';
-import { MondayConfig } from '../models/mondayConfig';
 import { isMondayErrorResponse, getMondayErrorMessage } from '../utils/mondayErrorHandler';
+import { Business } from '../models/business';
+import { getItemsPageByColumnValuesResponse } from '../models/getItemsPageByColumnValuesResponse';
+import { MondayConfig } from '../models/mondayConfig';
+import { Secteur } from '../models/secteur';
 
 class MondayRepository {
     // Returns database Object
@@ -16,7 +18,7 @@ class MondayRepository {
                 },
                 data: {
                     query: ` mutation {create_item (board_id: ${configs.board_id}, group_id: \"${configs.group_id}\", item_name: \"${
-                        item.nom
+                        item.name
                     }\", column_values: \"{\\\"${configs.category_column_id}\\\":\\\"${
                         item.category
                     }\\\", \\\"${configs.email_column_id}\\\":\\\"${
@@ -44,7 +46,7 @@ class MondayRepository {
     }
 
     // LEADS
-    static async createUnVerifiedLead(boardId: number, groupId: string, item: any, verifiedColumnId: string, verifiedColumnValue: string, dbIdColumnId: string): Promise<boolean> {
+    static async createUnVerifiedLead(boardId: number, groupId: string, item: Business, verifiedColumnId: string, verifiedColumnValue: string, dbIdColumnId: string): Promise<boolean> {
         try {
             const response = await axios({
                 url: 'https://api.monday.com/v2',
@@ -54,7 +56,7 @@ class MondayRepository {
                 },
                 data: {
                     query: `
-                mutation {create_item (board_id: ${boardId}, group_id: \"${groupId}\", item_name: \"${item.Nom}\", column_values: \"{\\\"${verifiedColumnId}\\\":\\\"${verifiedColumnValue}\\\", \\\"${dbIdColumnId}\\\":\\\"${item.id}\\\" }\" ) {id}}
+                mutation {create_item (board_id: ${boardId}, group_id: \"${groupId}\", item_name: \"${item.name}\", column_values: \"{\\\"${verifiedColumnId}\\\":\\\"${verifiedColumnValue}\\\", \\\"${dbIdColumnId}\\\":\\\"${item.id}\\\" }\" ) {id}}
               `,
                 },
             })
@@ -75,7 +77,7 @@ class MondayRepository {
         }
     }
 
-    static async getMondayVerifiedLeads(boardId: number, columnId: string, columnValue: string[]): Promise<any> {
+    static async getMondayVerifiedLeads(boardId: number, columnId: string, columnValue: string[]): Promise<getItemsPageByColumnValuesResponse> {
         try {
             const response = await axios({
                 url: 'https://api.monday.com/v2',
@@ -97,7 +99,7 @@ class MondayRepository {
                 throw response;
             }
 
-            return response.data;
+            return response.data.data.items_page_by_column_values;
         } catch (error) {
             throw new Error(`MondayRepositoryError: ${getMondayErrorMessage(error)}`);
         }
@@ -133,7 +135,7 @@ class MondayRepository {
     }
 
     // SECTEURS
-    static async createUnVerifiedSecteur(item): Promise<boolean> {
+    static async createUnVerifiedSecteur(item: Secteur): Promise<boolean> {
         try {
             const response = await axios({
                 url: 'https://api.monday.com/v2',
@@ -143,7 +145,7 @@ class MondayRepository {
                 },
                 data: {
                     query: `
-                 mutation ($boardId: ID!) {create_item (board_id: $boardId, group_id: "new_group42707__1", item_name: "${item.secteur}") {id}}
+                 mutation ($boardId: ID!) {create_item (board_id: $boardId, group_id: "new_group42707__1", item_name: "${item.name}") {id}}
               `,
                     variables: {
                         boardId: 6819942732,
@@ -167,7 +169,7 @@ class MondayRepository {
         }
     }
 
-    static async getMondayVerifiedSecteurs(): Promise<any> {
+    static async getMondayVerifiedSecteurs(): Promise<getItemsPageByColumnValuesResponse> {
         try {
             const response = await axios({
                 url: 'https://api.monday.com/v2',
@@ -184,13 +186,13 @@ class MondayRepository {
                 throw response;
             }
 
-            return response.data;
+            return response.data.data.items_page_by_column_values;
         } catch (error) {
             throw new Error(`MondayRepositoryError: ${getMondayErrorMessage(error)}`);
         }
     }
 
-    static async UpdateVerifiedSecteurStatus(item): Promise<any> {
+    static async UpdateVerifiedSecteurStatus(itemId: number): Promise<boolean> {
         try {
             const response = await axios({
                 url: 'https://api.monday.com/v2',
@@ -200,7 +202,7 @@ class MondayRepository {
                 },
                 data: {
                     query: `
-                 mutation {change_multiple_column_values(item_id:${item.id}, board_id:6819942732, column_values: \"{\\\"statut4__1\\\" : {\\\"label\\\" : \\\"DB Updaté\\\"}}\") {id}}
+                 mutation {change_multiple_column_values(item_id:${itemId}, board_id:6819942732, column_values: \"{\\\"statut4__1\\\" : {\\\"label\\\" : \\\"DB Updaté\\\"}}\") {id}}
               `,
                 },
             })

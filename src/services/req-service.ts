@@ -2,6 +2,9 @@ import mondayRepository from '../repositories/monday-repository';
 import reqRepository from '../repositories/req-database-repository';
 import { Request } from 'express';
 import mondayConfigService from './monday-config-service';
+import { itemToBusiness } from '../models/getItemsResponse';
+import { unverifiedLeadToBusiness } from '../models/getUnverifiedLeadsResponse';
+import { unverifiedSecteurToSecteur } from '../models/getUnverifiedSecteursResponse';
 import { MondayConfig } from '../models/mondayConfig';
 
 class ReqService {
@@ -17,7 +20,7 @@ class ReqService {
 
             // Creating the Query
             let queryStr =
-                `SELECT DISTINCT  l.email 'email' , l.id 'id_localisation', l.neq 'localisation_neq', l.secteur, l.adresse, l.ville, c.category_name 'category' , mrc.mrc_name, n.company_name FROM localisation l LEFT JOIN migration m ON l.id = m.localisation_id and m.user_id = ${userId} JOIN secteurs s on l.secteur = s.secteur_name JOIN category c on s.category_id = c.category_id JOIN ville v on l.ville = v.ville_name JOIN mrc on v.mrc_id = mrc.mrc_id JOIN name n on l.neq = n.neq WHERE m.localisation_id IS NULL and l.email is not null and l.email not in ('INVALID', 'VERIF');`;
+                `SELECT DISTINCT l.date_creation, l.email 'email' , l.id 'id_localisation', l.neq 'localisation_neq', l.secteur, l.adresse, l.ville, c.category_name 'category' , mrc.mrc_name, n.company_name FROM localisation l LEFT JOIN migration m ON l.id = m.localisation_id and m.user_id = ${userId} JOIN secteurs s on l.secteur = s.secteur_name JOIN category c on s.category_id = c.category_id JOIN ville v on l.ville = v.ville_name JOIN mrc on v.mrc_id = mrc.mrc_id JOIN name n on l.neq = n.neq WHERE m.localisation_id IS NULL and l.email is not null and l.email not in ('INVALID', 'VERIF');`
             
             const userConfigInfos: MondayConfig = await mondayConfigService.GetUserConfig(user);
 
@@ -35,14 +38,14 @@ class ReqService {
             queryStr += ';';
 
             // Sending the query
-            const result = await reqRepository.customQueryDB(queryStr);
+            const result = await reqRepository.getItems(queryStr);
 
             if (result.length === 0) {
                 return true;
             }
 
             for (let index = 0; index < result.length; index++) {
-                const element = result[index];
+                const element = itemToBusiness(result[index]);
 
                 try {
                     await mondayRepository.createMondayItem(userConfigInfos, element);
@@ -76,7 +79,7 @@ class ReqService {
             
             let queryStr =
                 "SELECT DISTINCT localisation.id, localisation.ville, localisation.email, localisation.neq, category.category_name, mrc.mrc_name, name.company_name FROM localisation JOIN secteurs ON localisation.secteur = secteurs.secteur_name JOIN category ON secteurs.category_id = category.category_id JOIN ville on localisation.ville = ville.ville_name JOIN mrc on ville.mrc_id = mrc.mrc_id Join name on localisation.neq = name.neq Where localisation.treshold < 0.5 and localisation.email = 'INVALID' and localisation.email != 'VERIF' LIMIT 10;";
-            const result = await reqRepository.customQueryDB(queryStr);
+            const result = await reqRepository.getUnVerifiedLeads(queryStr);
 
             // If there is no result return sucess
             if (result.length === 0) {
@@ -85,7 +88,7 @@ class ReqService {
 
             //TODO - test with real db
             for (let index = 0; index < result.length; index++) {
-                const element = result[index];
+                const element = unverifiedLeadToBusiness(result[index]);
                 await mondayRepository.createUnVerifiedLead(
                     userConfigInfos.leads_verification.board_id, 
                     userConfigInfos.leads_verification.unverified_group_id, 
@@ -118,8 +121,7 @@ class ReqService {
             const userConfigInfos: MondayConfig = await mondayConfigService.GetUserConfig('fyr');
 
             const verifiedLeadsObject = await mondayRepository.getMondayVerifiedLeads(userConfigInfos.leads_verification.board_id, userConfigInfos.leads_verification.verification_status_column_id, [userConfigInfos.leads_verification.verified_status_value]);
-            const verifiedLeads =
-                verifiedLeadsObject.data.items_page_by_column_values.items;
+            const verifiedLeads = verifiedLeadsObject.items;
 
             for (let index = 0; index < verifiedLeads.length; index++) {
                 const element = verifiedLeads[index];
@@ -147,14 +149,14 @@ class ReqService {
             let queryStr =
                 "SELECT localisation.secteur FROM localisation LEFT JOIN secteurs ON localisation.secteur = secteurs.secteur_name WHERE secteurs.secteur_name IS NULL AND localisation.secteur != '-' GROUP BY localisation.secteur;";
 
-            const result = await reqRepository.customQueryDB(queryStr);
+            const result = await reqRepository.getUnVerifiedSecteurs(queryStr);
 
             if (result.length === 0) {
                 return true;
             }
 
             for (let index = 0; index < result.length; index++) {
-                const element = result[index];
+                const element = unverifiedSecteurToSecteur(result[index]);
                 await mondayRepository.createUnVerifiedSecteur(element);
             }
 
@@ -166,11 +168,11 @@ class ReqService {
     }
 
     // Functions that Insert secteur to the DB and change the monday status
-    static async UpdateVerifiedSecteurs(): Promise<any> {
+    static async createVerifiedSecteurs(): Promise<any> {
         try {
             const VerifObject = await mondayRepository.getMondayVerifiedSecteurs();
-            const verifiedItems = VerifObject.data.items_page_by_column_values.items;
-
+            const verifiedItems = VerifObject.items;
+            
             for (let index = 0; index < verifiedItems.length; index++) {
                 const element = verifiedItems[index];
 
@@ -229,9 +231,9 @@ class ReqService {
                 // Insert into the database the new secteurs
                 await reqRepository.customQueryDB(queryStr);
                 // Change the status of the item
-                await mondayRepository.UpdateVerifiedSecteurStatus(element);
+                await mondayRepository.UpdateVerifiedSecteurStatus(element.id);
             }
-
+            
             return true;
         } catch (error) {
             console.log(error);
