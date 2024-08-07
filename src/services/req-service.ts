@@ -5,7 +5,7 @@ import mondayConfigService from './monday-config-service';
 import { MondayConfig } from '../models/mondayConfig';
 
 class ReqService {
-    static async getAllItems(req: Request): Promise<any> {
+    static async getAllItems(req: Request): Promise<boolean> {
         try {
             const { category, mrc, limit, user } = req.query;
 
@@ -55,6 +55,7 @@ class ReqService {
                     throw error;
                 }
             }
+            return true;
         } catch (error) {
             throw error;
         }

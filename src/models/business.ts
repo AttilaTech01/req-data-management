@@ -35,6 +35,6 @@ export function convertToBusiness(data: DatabaseBusiness): Business {
         mrc: data.nom.trim(),
         category: data.Category,
         email: data.email,
-        date_creation: data.date_creation.toISOString().slice(0,10)
+        date_creation: data.date_creation ? data.date_creation.toISOString().slice(0,10) : ''
     };
 }

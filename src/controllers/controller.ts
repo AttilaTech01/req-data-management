@@ -2,10 +2,10 @@ import reqService from '../services/req-service';
 
 export async function getAllItems(req, res): Promise<void> {
     try {
-        const data = await reqService.getAllItems(req);
+        await reqService.getAllItems(req);
         return res
             .status(200)
-            .send({ message: 'items fetched successfully', data: data });
+            .send({ message: 'items fetched successfully' });
     } catch (err) {
         return res.status(500).send(err.message);
     }
