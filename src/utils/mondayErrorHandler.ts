@@ -3,6 +3,7 @@
 
 export function isMondayErrorResponse(data: any): boolean {
     if (data.hasOwnProperty('error_message') || data.hasOwnProperty('error_code') || data.hasOwnProperty('errors')) {
+        console.log('Monday Data: ', JSON.stringify(data));
         return true;
     }
     return false;
@@ -10,17 +11,17 @@ export function isMondayErrorResponse(data: any): boolean {
 
 export function getMondayErrorMessage(data: any): string {
     switch(true) {
-        case data.hasOwnProperty('errors'): {
-            return data.errors[0].message;
+        case data.hasOwnProperty('error_code'): {
+            return data.error_message;
         }
         case data.hasOwnProperty('error_message'): {
             return data.error_message;
         }
-        case data.hasOwnProperty('error_code'): {
-            return data.error_message;
+        case data.hasOwnProperty('errors'): {
+            return data.errors[0].message;
         }
         default: {
-            return 'Unkown error'
+            return data
         }
     }
 }

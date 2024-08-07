@@ -17,13 +17,13 @@ class ReqService {
 
             // Creating the Query
             let queryStr =
-                `SELECT DISTINCT c.nom as 'Category', l.email, l.id, l.neq, l.secteur, l.adresse, l.ville, c.nom, mrc.nom, n.Nom FROM localisation l LEFT JOIN migration m ON l.id = m.localisation_id and m.user_id = ${userId} JOIN secteurs s on l.secteur = s.secteur_name JOIN category c on s.category_id = c.category_id JOIN ville v on l.ville = v.ville_name JOIN mrc on v.mrc_id = mrc.mrc_id JOIN name n on l.neq = n.NEQ WHERE m.localisation_id IS NULL and l.email is not null and l.email != 'INVALID'`;
+                `SELECT DISTINCT  l.email 'email' , l.id 'id_localisation', l.neq 'localisation_neq', l.secteur, l.adresse, l.ville, c.category_name 'category' , mrc.mrc_name, n.company_name FROM localisation l LEFT JOIN migration m ON l.id = m.localisation_id and m.user_id = ${userId} JOIN secteurs s on l.secteur = s.secteur_name JOIN category c on s.category_id = c.category_id JOIN ville v on l.ville = v.ville_name JOIN mrc on v.mrc_id = mrc.mrc_id JOIN name n on l.neq = n.neq WHERE m.localisation_id IS NULL and l.email is not null and l.email not in ('INVALID', 'VERIF');`;
             
             const userConfigInfos: MondayConfig = await mondayConfigService.GetUserConfig(user);
 
             if (category) {
                 // Add a case to the category name to an id
-                queryStr += ` and category.category_id = ${category}`;
+                queryStr += ` and c.category_id = ${category}`;
             }
             if (mrc) {
                 // Add a case to the category name to an id
@@ -75,7 +75,7 @@ class ReqService {
             const userConfigInfos: MondayConfig = await mondayConfigService.GetUserConfig('fyr');
             
             let queryStr =
-                "SELECT DISTINCT localisation.*, category.nom, mrc.nom, name.Nom FROM localisation JOIN secteurs ON localisation.secteur = secteurs.secteur_name JOIN category ON secteurs.category_id = category.category_id JOIN ville on localisation.ville = ville.ville_name JOIN mrc on ville.mrc_id = mrc.mrc_id Join name on localisation.neq = name.NEQ Where localisation.treshold < 0.5 and localisation.email = 'INVALID' and localisation.email != 'VERIF' LIMIT 10;";
+                "SELECT DISTINCT localisation.id, localisation.ville, localisation.email, localisation.neq, category.category_name, mrc.mrc_name, name.company_name FROM localisation JOIN secteurs ON localisation.secteur = secteurs.secteur_name JOIN category ON secteurs.category_id = category.category_id JOIN ville on localisation.ville = ville.ville_name JOIN mrc on ville.mrc_id = mrc.mrc_id Join name on localisation.neq = name.neq Where localisation.treshold < 0.5 and localisation.email = 'INVALID' and localisation.email != 'VERIF' LIMIT 10;";
             const result = await reqRepository.customQueryDB(queryStr);
 
             // If there is no result return sucess
@@ -145,7 +145,7 @@ class ReqService {
     static async getUnVerifiedSecteurs(): Promise<any> {
         try {
             let queryStr =
-                "select distinct localisation.secteur from localisation where localisation.secteur not in (select distinct secteur_name from secteurs) and localisation.secteur  != '-';";
+                "SELECT localisation.secteur FROM localisation LEFT JOIN secteurs ON localisation.secteur = secteurs.secteur_name WHERE secteurs.secteur_name IS NULL AND localisation.secteur != '-' GROUP BY localisation.secteur;";
 
             const result = await reqRepository.customQueryDB(queryStr);
 
