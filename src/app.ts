@@ -13,10 +13,6 @@ const port = process.env.PORT || 3000;
 const key = process.env.MONDAY_ACCESS_TOKEN;
 app.use(middleware.requestHandler)
 app.use(express.json());
-//Test Error monitoring
-app.use(function (req, res, next) {
-    throw new Error('Test error')
-  })
 app.use(routes);
 app.use(errorHandler);
 app.use(middleware.errorHandler)
