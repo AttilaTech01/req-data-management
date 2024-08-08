@@ -1,18 +1,17 @@
 import reqService from '../services/req-service';
 
-export async function getAllItems(req, res): Promise<void> {
+export async function getAllItems(req, res, next): Promise<void> {
     try {
         await reqService.getAllItems(req);
-        return res
-            .status(200)
-            .send({ message: 'items fetched successfully' });
+        return res.status(200).send({ message: 'items fetched successfully' });
     } catch (err) {
-        return res.status(500).send(err.message);
+        console.error(err);
+        next(err);
     }
 }
 
 // LEADS
-export async function getUnVerifiedLeads(req, res): Promise<void> {
+export async function getUnVerifiedLeads(req, res, next): Promise<void> {
     try {
         const data = await reqService.getUnVerifiedLeads(req);
         return res
@@ -20,11 +19,11 @@ export async function getUnVerifiedLeads(req, res): Promise<void> {
             .send({ message: 'items fetched successfully', data: data });
     } catch (err) {
         console.error(err);
-        return res.status(500).send({ message: 'internal server error', error: err });
+        next(err);
     }
 }
 
-export async function UpdateVerifiedLeads(req, res): Promise<void> {
+export async function UpdateVerifiedLeads(req, res, next): Promise<void> {
     try {
         const data = await reqService.UpdateVerifiedLeads(req);
         return res
@@ -32,12 +31,12 @@ export async function UpdateVerifiedLeads(req, res): Promise<void> {
             .send({ message: 'items updated successfully', data: data });
     } catch (err) {
         console.error(err);
-        return res.status(500).send({ message: 'internal server error', error: err });
+        next(err);
     }
 }
 
 // SECTEURS
-export async function getUnVerifiedSecteurs(req, res): Promise<void> {
+export async function getUnVerifiedSecteurs(req, res, next): Promise<void> {
     try {
         const data = await reqService.getUnVerifiedSecteurs();
         return res
@@ -45,11 +44,11 @@ export async function getUnVerifiedSecteurs(req, res): Promise<void> {
             .send({ message: 'items fetched successfully', data: data });
     } catch (err) {
         console.error(err);
-        return res.status(500).send({ message: 'internal server error' });
+        next(err);
     }
 }
 
-export async function createVerifiedSecteurs(req, res): Promise<void> {
+export async function createVerifiedSecteurs(req, res, next): Promise<void> {
     try {
         const data = await reqService.createVerifiedSecteurs();
         return res
@@ -57,6 +56,6 @@ export async function createVerifiedSecteurs(req, res): Promise<void> {
             .send({ message: 'items updated successfully', data: data });
     } catch (err) {
         console.error(err);
-        return res.status(500).send({ message: 'internal server error' });
+        next(err);
     }
 }

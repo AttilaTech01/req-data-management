@@ -20,25 +20,25 @@ router.get('/health', (req, res) => {
 });
 
 // LEADS
-router.get('/get-all-items', (req, res) => {
-    getAllItems(req, res);
+router.get('/get-all-items', (req, res, next) => {
+    getAllItems(req, res, next);
 });
 
-router.get('/get-unverified-leads', (req, res) => {
-    getUnVerifiedLeads(req, res);
+router.get('/get-unverified-leads', (req, res, next) => {
+    getUnVerifiedLeads(req, res, next);
 });
 
-router.patch('/update-verified-leads', (req, res) => {
-    UpdateVerifiedLeads(req, res);
+router.patch('/update-verified-leads', (req, res, next) => {
+    UpdateVerifiedLeads(req, res, next);
 });
 
 // SECTEURS
-router.get('/get-unverified-secteur', (req, res) => {
-    getUnVerifiedSecteurs(req, res);
+router.get('/get-unverified-secteur', (req, res, next) => {
+    getUnVerifiedSecteurs(req, res, next);
 });
 
-router.post('/create-verif-secteur', (req, res) => {
-    createVerifiedSecteurs(req, res);
+router.post('/create-verif-secteur', (req, res, next) => {
+    createVerifiedSecteurs(req, res, next);
 });
 
 // FUNCTIONS

@@ -2,6 +2,7 @@ import mysql from 'mysql2/promise';
 import { GetItemsResponse } from '../models/getItemsResponse';
 import { GetUnverifiedLeadsResponse } from '../models/getUnverifiedLeadsResponse';
 import { GetUnverifiedSecteursResponse } from '../models/getUnverifiedSecteursResponse';
+import { DatabaseError } from '../utils/errorClass';
 
 class ReqDatabaseRepository {
     static async customQueryDB(queryStr): Promise<void> {
@@ -12,12 +13,12 @@ class ReqDatabaseRepository {
                 password: 'root',
                 database: 'leads',
             });
-        
-            await connection.query(queryStr); 
-            
+
+            await connection.query(queryStr);
+
             connection.end();
         } catch (err) {
-            throw err;
+            throw new DatabaseError(err.sqlMessage);
         }
     }
 
@@ -31,8 +32,8 @@ class ReqDatabaseRepository {
                 password: 'root',
                 database: 'leads',
             });
-        
-            const [results, fields] = await connection.query(queryStr); 
+
+            const [results, fields] = await connection.query(queryStr);
 
             let index: number = 0;
             while (index >= 0) {
@@ -43,10 +44,10 @@ class ReqDatabaseRepository {
                     index = -1;
                 }
             }
-            
+
             connection.end();
         } catch (err) {
-            throw err;
+            throw new DatabaseError(err.sqlMessage);
         }
         return itemsToReturn;
     }
@@ -61,8 +62,8 @@ class ReqDatabaseRepository {
                 password: 'root',
                 database: 'leads',
             });
-        
-            const [results, fields] = await connection.query(queryStr); 
+
+            const [results, fields] = await connection.query(queryStr);
 
             let index: number = 0;
             while (index >= 0) {
@@ -73,15 +74,17 @@ class ReqDatabaseRepository {
                     index = -1;
                 }
             }
-            
+
             connection.end();
         } catch (err) {
-            throw err;
+            throw new DatabaseError(err.sqlMessage);
         }
         return itemsToReturn;
     }
 
-    static async getUnVerifiedSecteurs(queryStr): Promise<GetUnverifiedSecteursResponse[]> {
+    static async getUnVerifiedSecteurs(
+        queryStr
+    ): Promise<GetUnverifiedSecteursResponse[]> {
         let itemsToReturn: GetUnverifiedSecteursResponse[] = [];
 
         try {
@@ -91,8 +94,8 @@ class ReqDatabaseRepository {
                 password: 'root',
                 database: 'leads',
             });
-        
-            const [results, fields] = await connection.query(queryStr); 
+
+            const [results, fields] = await connection.query(queryStr);
 
             let index: number = 0;
             while (index >= 0) {
@@ -103,10 +106,10 @@ class ReqDatabaseRepository {
                     index = -1;
                 }
             }
-            
+
             connection.end();
         } catch (err) {
-            throw err;
+            throw new DatabaseError(err.sqlMessage);
         }
         return itemsToReturn;
     }

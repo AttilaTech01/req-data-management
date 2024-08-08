@@ -11,6 +11,9 @@
     "stop": "kill-port 8080 && kill-port 4049 && kill-port 4040"
   },
   "dependencies": {
+    "@sentry/cli": "^2.33.1",
+    "@sentry/node": "^8.24.0",
+    "@sentry/profiling-node": "^8.24.0",
     "axios": "^1.7.2",
     "body-parser": "^1.19.0",
     "dotenv": "^5.0.1",
