@@ -5,12 +5,17 @@
   "scripts": {
     "dev": "yarn stop && concurrently \"yarn dev-server\" \"yarn expose\"",
     "dev-server": "ts-node-dev --watch ./.env ./src/app.ts",
-    "start": "yarn server",
+    "start": "yarn server && yarn sentry:sourcemaps",
     "server": "nodemon ./src/app.ts",
     "expose": "mapps tunnel:create -p 8080",
-    "stop": "kill-port 8080 && kill-port 4049 && kill-port 4040"
+    "stop": "kill-port 8080 && kill-port 4049 && kill-port 4040",
+    "sentry:sourcemaps": "sentry-cli sourcemaps inject --org attila-technologies --project node ./dist && sentry-cli sourcemaps upload --org attila-technologies --project node ./dist",
+    "build": "tsc",
+    "start-prod": "node dist/app.js"
   },
   "dependencies": {
+    "@bugsnag/js": "^7.25.0",
+    "@bugsnag/plugin-express": "^7.25.0",
     "@sentry/cli": "^2.33.1",
     "@sentry/node": "^8.24.0",
     "@sentry/profiling-node": "^8.24.0",
