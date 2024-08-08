@@ -1,10 +1,10 @@
 const Bugsnag = require('@bugsnag/js')
 const  BugsnagPluginExpress = require('@bugsnag/plugin-express')
-
-
+import dotenv from 'dotenv';
+dotenv.config({ path: './.env' });
 
 Bugsnag.start({
-    apiKey: '1365738a1a7d14c024cda7368ae66f83',
+    apiKey: process.env.BUGSNAG_KEY,
     plugins: [BugsnagPluginExpress]
   })
 

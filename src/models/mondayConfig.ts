@@ -7,6 +7,7 @@ export interface MondayConfig {
         db_updated_status_value: string,
         verification_status_column_id: string,
         email_column_id: string,
+        telephone_column_id: string,
         db_id_column_id: string
     },
     new_entries: {

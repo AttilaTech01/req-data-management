@@ -19,7 +19,7 @@ class ReqService {
             const userId = mondayConfigService.GetUserDatabaseID(user);
 
             // Creating the Query
-            let queryStr = `SELECTT DISTINCT l.date_creation, l.email 'email' , l.id 'id_localisation', l.neq 'localisation_neq', l.secteur, l.adresse, l.ville, c.category_name 'category' , mrc.mrc_name, n.company_name FROM localisation l LEFT JOIN migration m ON l.id = m.localisation_id and m.user_id = ${userId} JOIN secteurs s on l.secteur = s.secteur_name JOIN category c on s.category_id = c.category_id JOIN ville v on l.ville = v.ville_name JOIN mrc on v.mrc_id = mrc.mrc_id JOIN name n on l.neq = n.neq WHERE m.localisation_id IS NULL and l.email is not null and l.email not in ('INVALID', 'VERIF');`;
+            let queryStr = `SELECT DISTINCT l.date_creation, l.email 'email' , l.id 'id_localisation', l.neq 'localisation_neq', l.secteur, l.adresse, l.ville, c.category_name 'category' , mrc.mrc_name, n.company_name FROM localisation l LEFT JOIN migration m ON l.id = m.localisation_id and m.user_id = ${userId} JOIN secteurs s on l.secteur = s.secteur_name JOIN category c on s.category_id = c.category_id JOIN ville v on l.ville = v.ville_name JOIN mrc on v.mrc_id = mrc.mrc_id JOIN name n on l.neq = n.neq WHERE m.localisation_id IS NULL and l.email is not null and l.email not in ('INVALID', 'VERIF')`;
 
             const userConfigInfos: MondayConfig = await mondayConfigService.GetUserConfig(
                 user
@@ -138,12 +138,16 @@ class ReqService {
                     element,
                     userConfigInfos.leads_verification.email_column_id
                 );
+                const telephone = mondayConfigService.FindColumnValuefromId(
+                    element,
+                    userConfigInfos.leads_verification.telephone_column_id
+                );
                 const dbId = mondayConfigService.FindColumnValuefromId(
                     element,
                     userConfigInfos.leads_verification.db_id_column_id
                 );
 
-                const queryStr = `UPDATE localisation set email="${email}" where id = ${dbId}`;
+                const queryStr = `UPDATE localisation set email="${email}", telephone = "${telephone}" where id = ${dbId}`;
                 // Update the Database - temporarily DISABLED since we are using test data for the moment
                 await reqRepository.customQueryDB(queryStr);
                 // Update the monday status
