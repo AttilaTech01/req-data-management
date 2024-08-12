@@ -27,6 +27,7 @@
     "monday-sdk-js": "^0.5.5",
     "mysql": "^2.18.1",
     "mysql2": "^3.10.0",
+    "node-cron": "^3.0.3",
     "node-schedule": "^2.1.1",
     "querystring": "^0.2.1",
     "ts-node": "^10.9.2"

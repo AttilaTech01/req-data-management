@@ -347,10 +347,11 @@ class ReqService {
             for (let index = 0; index < listToMerge.length; index++) {
                 const element = listToMerge[index];
                 //console.log(element);
-                const updateQueryStr = `Update localisation set company_name = '${element.company_name}', company_migration = 1 where id = ${element.id}`;
+                const updateQueryStr = `Update localisation set company_name = "${element.company_name}", company_migration = 1 where id = ${element.id}`;
                 console.log(updateQueryStr);
                 await reqRepository.customQueryDB(updateQueryStr);
             }
+            return true;
         } catch (error) {
             console.log(error);
             throw error;
