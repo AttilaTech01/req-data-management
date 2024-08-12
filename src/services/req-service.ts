@@ -6,7 +6,7 @@ import { itemToBusiness } from '../models/getItemsResponse';
 import { unverifiedLeadToBusiness } from '../models/getUnverifiedLeadsResponse';
 import { unverifiedSecteurToSecteur } from '../models/getUnverifiedSecteursResponse';
 import { MondayConfig } from '../models/mondayConfig';
-import schedule from 'node-schedule';
+
 class ReqService {
     static async getAllItems(req: Request): Promise<boolean> {
         try {
@@ -331,6 +331,26 @@ class ReqService {
             }
 
             return true;
+        } catch (error) {
+            console.log(error);
+            throw error;
+        }
+    }
+
+    static async nameTransfer(): Promise<any> {
+        try {
+            const queryStr =
+                'select DISTINCT l.id, l.company_name "localisation_name", l.company_migration, n.company_name, l.neq from localisation l join name n on l.neq = n.neq where l.company_migration != 1 limit 50;';
+            const listToMerge = await reqRepository.getMergeNameItems(queryStr);
+            console.log(listToMerge);
+
+            for (let index = 0; index < listToMerge.length; index++) {
+                const element = listToMerge[index];
+                //console.log(element);
+                const updateQueryStr = `Update localisation set company_name = '${element.company_name}', company_migration = 1 where id = ${element.id}`;
+                console.log(updateQueryStr);
+                await reqRepository.customQueryDB(updateQueryStr);
+            }
         } catch (error) {
             console.log(error);
             throw error;
