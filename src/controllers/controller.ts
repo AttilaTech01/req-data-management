@@ -81,6 +81,7 @@ export async function nameTransfer(req, res, next): Promise<void> {
         rule.minute = 4;
         const job = schedule.scheduleJob(rule, async function () {
             const data = await reqService.nameTransfer();
+            console.log('The merge Was executed');
         });
         return res.status(200).send({ message: 'items updated successfully' });
     } catch (err) {
