@@ -3,7 +3,7 @@ import dotenv from 'dotenv';
 import routes from './routes';
 import errorHandler from './utils/errorHandlerMiddleware';
 import Bugsnag from './BugSnag';
-require('./utils/job');
+
 dotenv.config({ path: './.env' });
 
 const app = express();
@@ -16,7 +16,7 @@ app.use(express.json());
 app.use(routes);
 app.use(errorHandler);
 app.use(middleware.errorHandler);
-
+require('./utils/job');
 app.listen(port, () =>
     console.log(`REQ Data management API is listening at http://localhost:${port}`)
 );
