@@ -6,7 +6,7 @@ import { itemToBusiness } from '../models/getItemsResponse';
 import { unverifiedLeadToBusiness } from '../models/getUnverifiedLeadsResponse';
 import { unverifiedSecteurToSecteur } from '../models/getUnverifiedSecteursResponse';
 import { MondayConfig } from '../models/mondayConfig';
-
+import schedule from 'node-schedule';
 class ReqService {
     static async getAllItems(req: Request): Promise<boolean> {
         try {
@@ -256,6 +256,78 @@ class ReqService {
                 await reqRepository.customQueryDB(queryStr);
                 // Change the status of the item
                 await mondayRepository.UpdateVerifiedSecteurStatus(element.id);
+            }
+
+            return true;
+        } catch (error) {
+            console.log(error);
+            throw error;
+        }
+    }
+
+    static async dailyLeadsCategorisation(): Promise<any> {
+        try {
+            // Add la Jon dans le controller
+            //   const rule = new schedule.RecurrenceRule();
+            //   rule.hour = 12;
+            //   const job = schedule.scheduleJob(rule, async function () {
+            //       const categorisedLeads = await mondayRepository.getCategorisedLeads();
+            //      console.log(categorisedLeads)
+            //   });
+
+            const userConfigInfos: MondayConfig = await mondayConfigService.GetUserConfig(
+                'fyr'
+            );
+            // Get every leads where category status À faire
+            const categorisedLeads = await mondayRepository.getCategorisedLeads();
+            console.log('Outside the loop ', categorisedLeads.items);
+
+            // Loop on the List of categorised elads
+            for (let index = 0; index < categorisedLeads.items.length; index++) {
+                const element = categorisedLeads.items[index];
+                //console.log('inside the loop', element.column_values);
+                const leadsCategory = element.column_values.find((item) =>
+                    item.id.includes('statut__1')
+                );
+                //console.log('This is leadsCategory', leadsCategory);
+                const leadsBdId = element.column_values.find((item) =>
+                    item.id.includes('chiffres8__1')
+                );
+
+                // change the category values to an id
+                const textToIdMap = {
+                    Construction: 1,
+                    Tourisme: 2,
+                    Agriculture: 3,
+                    Services: 4,
+                    Finance: 5,
+                    Transport: 6,
+                    Technologie: 7,
+                    'Commerce and retail': 8,
+                    'Art, Cultures, Loisir': 9,
+                    Industriel: 10,
+                    Santé: 11,
+                    'Real Estate': 12,
+                    Éducation: 13,
+                    Énergie: 14,
+                    'Services Pro': 15,
+                };
+                //   mettre une category dans la DB = 0
+                const leadsCategoryId = textToIdMap[leadsCategory.text] || 0;
+
+                // Create the database Query to update the database
+
+                const queryStr = `UPDATE localisation set category_id = ${leadsCategoryId} where id = ${leadsBdId.text} `;
+
+                await reqRepository.customQueryDB(queryStr);
+
+                // Update le Status Monday
+                await mondayRepository.updateCategorisedLeadStatus(
+                    userConfigInfos.new_entries.board_id,
+                    element.id,
+                    userConfigInfos.new_entries.category_status,
+                    userConfigInfos.new_entries.categorised_status_value
+                );
             }
 
             return true;

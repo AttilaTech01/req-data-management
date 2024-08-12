@@ -5,6 +5,7 @@ import {
     getUnVerifiedLeads,
     createVerifiedSecteurs,
     UpdateVerifiedLeads,
+    dailyLeadsCategorisation,
 } from '../controllers/controller';
 
 const router = express();
@@ -40,7 +41,9 @@ router.get('/get-unverified-secteur', (req, res, next) => {
 router.post('/create-verif-secteur', (req, res, next) => {
     createVerifiedSecteurs(req, res, next);
 });
-
+router.get('/get-categorised-leads', (req, res, next) => {
+    dailyLeadsCategorisation(req, res, next);
+});
 // FUNCTIONS
 function getHealth() {
     return {

@@ -27,12 +27,14 @@ class MondayRepository {
                     }\", column_values: \"{ \\\"${configs.email_column_id}\\\":\\\"${
                         item.email + ' ' + item.email
                     }\\\", \\\"${configs.region_column_id}\\\":\\\"${item.mrc}\\\", \\\"${
-                        configs.city_column_id
-                    }\\\":\\\"${item.ville}\\\", \\\"${
-                        configs.secteur_column_id
-                    }\\\":\\\"${item.secteur}\\\", \\\"${
-                        configs.foundation_date_column_id
-                    }\\\":\\\"${item.date_creation}\\\"  }\") {id}} `,
+                        configs.db_id_column_id
+                    }\\\":\\\"${item.id}\\\", \\\"${configs.city_column_id}\\\":\\\"${
+                        item.ville
+                    }\\\", \\\"${configs.secteur_column_id}\\\":\\\"${
+                        item.secteur
+                    }\\\", \\\"${configs.foundation_date_column_id}\\\":\\\"${
+                        item.date_creation
+                    }\\\"  }\") {id}} `,
                 },
             });
 
@@ -240,6 +242,56 @@ class MondayRepository {
         return true;
     }
     */
+
+    static async getCategorisedLeads(): Promise<any> {
+        try {
+            const response = await axios({
+                url: 'https://api.monday.com/v2',
+                method: 'post',
+                headers: {
+                    Authorization: process.env.MONDAY_ACCESS_TOKEN,
+                },
+                data: {
+                    query: 'query { items_page_by_column_values (board_id: 6803849261, columns: [{column_id: "statut5__1", column_values: "À faire"}]) { cursor items { id name column_values {id text}}}}',
+                },
+            });
+
+            if (isMondayErrorResponse(response.data)) {
+                throw response.data;
+            }
+
+            return response.data.data.items_page_by_column_values;
+        } catch (error) {
+            throw throwMondayError(error);
+        }
+    }
+    static async updateCategorisedLeadStatus(
+        boardId: number,
+        itemId: number,
+        columnId: string,
+        columnValue: string
+    ): Promise<boolean> {
+        try {
+            const response = await axios({
+                url: 'https://api.monday.com/v2',
+                method: 'post',
+                headers: {
+                    Authorization: process.env.MONDAY_ACCESS_TOKEN,
+                },
+                data: {
+                    query: `mutation {change_multiple_column_values(item_id: ${itemId}, board_id: ${boardId}, column_values: \"{\\\"${columnId}\\\" : {\\\"label\\\" : \\\"${columnValue}\\\"}}\") {id}}`,
+                },
+            });
+
+            if (isMondayErrorResponse(response.data)) {
+                throw response.data;
+            }
+
+            return true;
+        } catch (error) {
+            throw throwMondayError(error);
+        }
+    }
 }
 
 export default MondayRepository;
