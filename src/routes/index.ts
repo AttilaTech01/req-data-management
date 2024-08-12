@@ -6,7 +6,6 @@ import {
     createVerifiedSecteurs,
     UpdateVerifiedLeads,
     dailyLeadsCategorisation,
-    nameTransfer,
 } from '../controllers/controller';
 
 const router = express();
@@ -45,9 +44,7 @@ router.post('/create-verif-secteur', (req, res, next) => {
 router.get('/get-categorised-leads', (req, res, next) => {
     dailyLeadsCategorisation(req, res, next);
 });
-router.get('/merge-name', (req, res, next) => {
-    nameTransfer(req, res, next);
-});
+
 // FUNCTIONS
 function getHealth() {
     return {
