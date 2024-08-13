@@ -1,3 +1,4 @@
+import { Item } from '../models/getItemsPageByColumnValuesResponse';
 import { MondayConfig } from '../models/mondayConfig';
 
 // Users with their Database ID
@@ -21,7 +22,7 @@ class MondayConfigService {
         return User[userName.toLowerCase() as keyof typeof User];
     }
 
-    static FindColumnValuefromId(mondayItem: any, columnId: string): string {
+    static FindColumnValuefromId(mondayItem: Item, columnId: string): string | number {
         const columns = mondayItem.column_values;
 
         for (let index = 0; index < columns.length; index++) {
