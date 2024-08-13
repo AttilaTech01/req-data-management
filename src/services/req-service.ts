@@ -1,11 +1,12 @@
+import { Request } from 'express';
 import mondayRepository from '../repositories/monday-repository';
 import reqRepository from '../repositories/req-database-repository';
-import { Request } from 'express';
-import mondayConfigService from './monday-config-service';
+import { categories } from '../models/categories';
 import { itemToBusiness } from '../models/getItemsResponse';
 import { unverifiedLeadToBusiness } from '../models/getUnverifiedLeadsResponse';
 import { unverifiedSecteurToSecteur } from '../models/getUnverifiedSecteursResponse';
 import { MondayConfig } from '../models/mondayConfig';
+import mondayConfigService from './monday-config-service';
 
 class ReqService {
     static async getAllItems(req: Request): Promise<boolean> {
@@ -271,53 +272,39 @@ class ReqService {
                 'fyr'
             );
             // Get every leads where category status À faire
-            const categorisedLeads = await mondayRepository.getCategorisedLeads();
+            const categorisedLeads = await mondayRepository.getCategorizedLeads();
 
-            // Loop on the List of categorised elads
+            // Loop on the List of categorized leads
             for (let index = 0; index < categorisedLeads.items.length; index++) {
                 const element = categorisedLeads.items[index];
-                //console.log('inside the loop', element.column_values);
+                /*
                 const leadsCategory = element.column_values.find((item) =>
                     item.id.includes('statut__1')
                 );
-                //console.log('This is leadsCategory', leadsCategory);
                 const leadsBdId = element.column_values.find((item) =>
                     item.id.includes('chiffres8__1')
                 );
+                */
+                const leadsCategory = mondayConfigService.FindColumnValuefromId(
+                    element,
+                    'statut__1'
+                );
+                const leadsBdId = mondayConfigService.FindColumnValuefromId(
+                    element,
+                    'chiffres8__1'
+                );
 
-                // change the category values to an id
-                const textToIdMap = {
-                    Construction: 1,
-                    Tourisme: 2,
-                    Agriculture: 3,
-                    Services: 4,
-                    Finance: 5,
-                    Transport: 6,
-                    Technologie: 7,
-                    'Commerce and retail': 8,
-                    'Art, Cultures, Loisir': 9,
-                    Industriel: 10,
-                    Santé: 11,
-                    'Real Estate': 12,
-                    Éducation: 13,
-                    Énergie: 14,
-                    'Services Pro': 15,
-                };
-                //   mettre une category dans la DB = 0
-                const leadsCategoryId = textToIdMap[leadsCategory.text] || 0;
-
-                // Create the database Query to update the database
-
-                const queryStr = `UPDATE localisation set category_id = ${leadsCategoryId} where id = ${leadsBdId.text} `;
-
+                // Update the database
+                const leadsCategoryId = categories[leadsCategory] || 0;
+                const queryStr = `UPDATE localisation set category_id = ${leadsCategoryId} where id = ${leadsBdId} `;
                 await reqRepository.customQueryDB(queryStr);
 
-                // Update le Status Monday
-                await mondayRepository.updateCategorisedLeadStatus(
+                // Update monday status
+                await mondayRepository.updateCategorizedLeadStatus(
                     userConfigInfos.new_entries.board_id,
                     element.id,
                     userConfigInfos.new_entries.category_status,
-                    userConfigInfos.new_entries.categorised_status_value
+                    userConfigInfos.new_entries.categorized_status_value
                 );
             }
 

@@ -1,8 +1,8 @@
-interface customError extends Error {
+interface CustomError extends Error {
     statusCode: number;
 }
 
-class MondayError extends Error implements customError {
+class MondayError extends Error implements CustomError {
     statusCode: number;
     constructor(message, statusCode) {
         super(message);
@@ -12,7 +12,7 @@ class MondayError extends Error implements customError {
     }
 }
 
-class DatabaseError extends Error implements customError {
+class DatabaseError extends Error implements CustomError {
     statusCode: number;
     constructor(message) {
         super(message);

@@ -1,6 +1,6 @@
 // There is 3 types of monday errors
 // This handler was inspired by: https://developer.monday.com/api-reference/docs/errors
-import { MondayError } from './errorClass';
+import { MondayError } from '../models/customErrors';
 
 export function isMondayErrorResponse(data: any): boolean {
     if (

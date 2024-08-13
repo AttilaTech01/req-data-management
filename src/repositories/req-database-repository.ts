@@ -2,7 +2,7 @@ import mysql from 'mysql2/promise';
 import { GetItemsResponse } from '../models/getItemsResponse';
 import { GetUnverifiedLeadsResponse } from '../models/getUnverifiedLeadsResponse';
 import { GetUnverifiedSecteursResponse } from '../models/getUnverifiedSecteursResponse';
-import { DatabaseError } from '../utils/errorClass';
+import { DatabaseError } from '../models/customErrors';
 
 class ReqDatabaseRepository {
     static async customQueryDB(queryStr): Promise<void> {
@@ -114,6 +114,7 @@ class ReqDatabaseRepository {
         return itemsToReturn;
     }
 
+    // TEMPORARY
     static async getMergeNameItems(queryStr): Promise<any> {
         let itemsToReturn = [];
 

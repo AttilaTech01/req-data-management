@@ -25,6 +25,11 @@ router.get('/get-all-items', (req, res, next) => {
     getAllItems(req, res, next);
 });
 
+router.get('/get-categorized-leads', (req, res, next) => {
+    dailyLeadsCategorisation(req, res, next);
+});
+
+// VERIFICATION
 router.get('/get-unverified-leads', (req, res, next) => {
     getUnVerifiedLeads(req, res, next);
 });
@@ -40,9 +45,6 @@ router.get('/get-unverified-secteur', (req, res, next) => {
 
 router.post('/create-verif-secteur', (req, res, next) => {
     createVerifiedSecteurs(req, res, next);
-});
-router.get('/get-categorised-leads', (req, res, next) => {
-    dailyLeadsCategorisation(req, res, next);
 });
 
 // FUNCTIONS
