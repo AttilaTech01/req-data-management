@@ -62,13 +62,14 @@ export async function createVerifiedSecteurs(req, res, next): Promise<void> {
 
 export async function dailyLeadsCategorisation(req, res, next): Promise<void> {
     try {
-        const rule = new schedule.RecurrenceRule();
-        rule.hour = 12;
-        const job = schedule.scheduleJob(rule, async function () {
-            const categorisedLeads = await reqService.dailyLeadsCategorisation();
-        });
+        //  const rule = new schedule.RecurrenceRule();
+        //  rule.hour = 12;
+        //   const job = schedule.scheduleJob(rule, async function () {
+        //      const categorisedLeads = await reqService.dailyLeadsCategorisation();
+        /// });
+        await reqService.dailyLeadsCategorisation();
 
-        return res.status(200).send({ message: 'items updated successfully' });
+        return res.status(200).send({ message: 'items categorized successfully' });
     } catch (err) {
         console.error(err);
         next(err);

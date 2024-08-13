@@ -267,20 +267,11 @@ class ReqService {
 
     static async dailyLeadsCategorisation(): Promise<any> {
         try {
-            // Add la Jon dans le controller
-            //   const rule = new schedule.RecurrenceRule();
-            //   rule.hour = 12;
-            //   const job = schedule.scheduleJob(rule, async function () {
-            //       const categorisedLeads = await mondayRepository.getCategorisedLeads();
-            //      console.log(categorisedLeads)
-            //   });
-
             const userConfigInfos: MondayConfig = await mondayConfigService.GetUserConfig(
                 'fyr'
             );
             // Get every leads where category status À faire
             const categorisedLeads = await mondayRepository.getCategorisedLeads();
-            console.log('Outside the loop ', categorisedLeads.items);
 
             // Loop on the List of categorised elads
             for (let index = 0; index < categorisedLeads.items.length; index++) {
