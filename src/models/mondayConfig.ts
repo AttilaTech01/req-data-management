@@ -22,5 +22,6 @@ export interface MondayConfig {
         db_id_column_id: string;
         category_status: string;
         categorized_status_value: string;
+        to_categorized_status_value: string;
     };
 }

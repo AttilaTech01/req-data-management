@@ -18,6 +18,9 @@
         "region_column_id": "statut6__1",
         "secteur_column_id": "texte6__1",
         "foundation_date_column_id": "date__1",
-        "db_id_column_id": "chiffres6__1"
+        "db_id_column_id": "chiffres6__1",
+        "category_status": "statut0__1",
+        "categorized_status_value": "Fait",
+        "to_categorized_status_value": "Synchronisation"
     }
 }

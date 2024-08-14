@@ -4,25 +4,16 @@ import reqService from '../services/req-service';
 export async function getAllItems(req, res, next): Promise<void> {
     try {
         await reqService.getAllItems(req);
-        return res
-            .status(200)
-            .send({ message: 'new leads fetched successfully' });
+        return res.status(200).send({ message: 'new leads fetched successfully' });
     } catch (err) {
         console.error(err);
         next(err);
     }
 }
 
-export async function dailyLeadsCategorisation(req, res, next): Promise<void> {
+export async function updateLeadsCategorisation(req, res, next): Promise<void> {
     try {
-        /*
-        const rule = new schedule.RecurrenceRule();
-        rule.hour = 12;
-        const job = schedule.scheduleJob(rule, async function () {
-            const categorisedLeads = await reqService.dailyLeadsCategorisation();
-        });
-        */
-        await reqService.dailyLeadsCategorisation();
+        await reqService.updateLeadsCategorisation(req);
 
         return res.status(200).send({ message: 'items categorized successfully' });
     } catch (err) {

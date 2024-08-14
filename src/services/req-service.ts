@@ -266,32 +266,33 @@ class ReqService {
         }
     }
 
-    static async dailyLeadsCategorisation(): Promise<any> {
+    static async updateLeadsCategorisation(req: Request): Promise<any> {
         try {
+            const { user } = req.query;
+
+            if (!user || typeof user !== 'string') {
+                return false;
+            }
+
             const userConfigInfos: MondayConfig = await mondayConfigService.GetUserConfig(
-                'fyr'
+                user
             );
             // Get every leads where category status À faire
-            const categorisedLeads = await mondayRepository.getCategorizedLeads();
+            const categorisedLeads = await mondayRepository.getCategorizedLeads(
+                userConfigInfos
+            );
 
             // Loop on the List of categorized leads
             for (let index = 0; index < categorisedLeads.items.length; index++) {
                 const element = categorisedLeads.items[index];
-                /*
-                const leadsCategory = element.column_values.find((item) =>
-                    item.id.includes('statut__1')
-                );
-                const leadsBdId = element.column_values.find((item) =>
-                    item.id.includes('chiffres8__1')
-                );
-                */
+
                 const leadsCategory = mondayConfigService.FindColumnValuefromId(
                     element,
-                    'statut__1'
+                    userConfigInfos.new_entries.category_column_id
                 );
                 const leadsBdId = mondayConfigService.FindColumnValuefromId(
                     element,
-                    'chiffres8__1'
+                    userConfigInfos.new_entries.db_id_column_id
                 );
 
                 // Update the database
