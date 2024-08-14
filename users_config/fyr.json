@@ -22,6 +22,17 @@
         "db_id_column_id": "chiffres8__1",
         "category_status": "statut5__1",
         "categorized_status_value": "Fait",
-        "to_categorized_status_value": "Synchronisation"
+        "to_categorized_status_value": "Synchronisation",
+        "duplicates_status": "status8__1",
+        "duplicates_ok_status_value": "Ok",
+        "duplicates_not_ok_status_value": "Doublon",
+        "to_check_duplicates_status_value": "Attente",
+        "board_ids_for_duplicates": [
+            "7225111973",
+            "6819684654",
+            "6823505490",
+            "6823558881",
+            "6819986368"
+        ]
     }
 }

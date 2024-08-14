@@ -22,6 +22,18 @@ export async function updateLeadsCategorisation(req, res, next): Promise<void> {
     }
 }
 
+export async function duplicatesVerification(req, res, next): Promise<void> {
+    try {
+        await reqService.duplicatesVerification(req);
+        return res
+            .status(200)
+            .send({ message: 'Duplicates have been verified successfully' });
+    } catch (err) {
+        console.error(err);
+        next(err);
+    }
+}
+
 // VERIFICATION
 export async function getUnVerifiedLeads(req, res, next): Promise<void> {
     try {

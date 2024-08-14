@@ -2,6 +2,7 @@ import { Request } from 'express';
 import mondayRepository from '../repositories/monday-repository';
 import reqRepository from '../repositories/req-database-repository';
 import { categories } from '../models/categories';
+import { UserError } from '../models/customErrors';
 import { itemToBusiness } from '../models/getItemsResponse';
 import { unverifiedLeadToBusiness } from '../models/getUnverifiedLeadsResponse';
 import { unverifiedSecteurToSecteur } from '../models/getUnverifiedSecteursResponse';
@@ -9,6 +10,7 @@ import { MondayConfig } from '../models/mondayConfig';
 import mondayConfigService from './monday-config-service';
 
 class ReqService {
+    // LEADS
     static async getAllItems(req: Request): Promise<boolean> {
         try {
             const { category, mrc, limit, user } = req.query;
@@ -67,7 +69,77 @@ class ReqService {
         }
     }
 
-    // LEADS
+    static async updateLeadsCategorisation(req: Request): Promise<any> {
+        try {
+            const { user } = req.query;
+
+            if (!user || typeof user !== 'string') {
+                return false;
+            }
+
+            const userConfigInfos: MondayConfig = await mondayConfigService.GetUserConfig(
+                user
+            );
+            // Get every leads where category status À faire
+            const categorisedLeads = await mondayRepository.getCategorizedLeads(
+                userConfigInfos
+            );
+
+            // Loop on the List of categorized leads
+            for (let index = 0; index < categorisedLeads.items.length; index++) {
+                const element = categorisedLeads.items[index];
+
+                const leadsCategory = mondayConfigService.FindColumnValuefromId(
+                    element,
+                    userConfigInfos.new_entries.category_column_id
+                );
+                const leadsBdId = mondayConfigService.FindColumnValuefromId(
+                    element,
+                    userConfigInfos.new_entries.db_id_column_id
+                );
+
+                // Update the database
+                const leadsCategoryId = categories[leadsCategory] || 0;
+                const queryStr = `UPDATE localisation set category_id = ${leadsCategoryId} where id = ${leadsBdId} `;
+                await reqRepository.customQueryDB(queryStr);
+
+                // Update monday status
+                await mondayRepository.updateCategorizedLeadStatus(
+                    userConfigInfos.new_entries.board_id,
+                    element.id,
+                    userConfigInfos.new_entries.category_status,
+                    userConfigInfos.new_entries.categorized_status_value
+                );
+            }
+
+            return true;
+        } catch (error) {
+            console.log(error);
+            throw error;
+        }
+    }
+
+    static async duplicatesVerification(req: Request): Promise<boolean> {
+        try {
+            const { user } = req.query;
+
+            if (!user || typeof user !== 'string') {
+                throw new UserError('User must be specified');
+            }
+            const userConfigInfos: MondayConfig = await mondayConfigService.GetUserConfig(
+                user
+            );
+
+            // insert business logic here
+
+            return true;
+        } catch (error) {
+            console.log(error);
+            throw error;
+        }
+    }
+
+    // VERIFICATION
     // Get all the items with email=INVALID and a treshold less than 0.5 from the DB
     // Create each of them in monday board (6797870427)
     static async getUnVerifiedLeads(req: Request): Promise<any> {
@@ -266,56 +338,7 @@ class ReqService {
         }
     }
 
-    static async updateLeadsCategorisation(req: Request): Promise<any> {
-        try {
-            const { user } = req.query;
-
-            if (!user || typeof user !== 'string') {
-                return false;
-            }
-
-            const userConfigInfos: MondayConfig = await mondayConfigService.GetUserConfig(
-                user
-            );
-            // Get every leads where category status À faire
-            const categorisedLeads = await mondayRepository.getCategorizedLeads(
-                userConfigInfos
-            );
-
-            // Loop on the List of categorized leads
-            for (let index = 0; index < categorisedLeads.items.length; index++) {
-                const element = categorisedLeads.items[index];
-
-                const leadsCategory = mondayConfigService.FindColumnValuefromId(
-                    element,
-                    userConfigInfos.new_entries.category_column_id
-                );
-                const leadsBdId = mondayConfigService.FindColumnValuefromId(
-                    element,
-                    userConfigInfos.new_entries.db_id_column_id
-                );
-
-                // Update the database
-                const leadsCategoryId = categories[leadsCategory] || 0;
-                const queryStr = `UPDATE localisation set category_id = ${leadsCategoryId} where id = ${leadsBdId} `;
-                await reqRepository.customQueryDB(queryStr);
-
-                // Update monday status
-                await mondayRepository.updateCategorizedLeadStatus(
-                    userConfigInfos.new_entries.board_id,
-                    element.id,
-                    userConfigInfos.new_entries.category_status,
-                    userConfigInfos.new_entries.categorized_status_value
-                );
-            }
-
-            return true;
-        } catch (error) {
-            console.log(error);
-            throw error;
-        }
-    }
-
+    // TEMPORARY
     static async nameTransfer(): Promise<any> {
         try {
             const queryStr =

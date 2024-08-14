@@ -1,5 +1,6 @@
 import express from 'express';
 import {
+    duplicatesVerification,
     getAllItems,
     getUnVerifiedSecteurs,
     getUnVerifiedLeads,
@@ -24,9 +25,13 @@ router.get('/health', (req, res) => {
 router.get('/get-all-items', (req, res, next) => {
     getAllItems(req, res, next);
 });
-//
+
 router.patch('/update-categorized-leads', (req, res, next) => {
     updateLeadsCategorisation(req, res, next);
+});
+
+router.get('/verify-duplicates', (req, res, next) => {
+    duplicatesVerification(req, res, next);
 });
 
 // VERIFICATION

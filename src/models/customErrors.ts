@@ -22,4 +22,14 @@ class DatabaseError extends Error implements CustomError {
     }
 }
 
-export { MondayError, DatabaseError };
+class UserError extends Error implements CustomError {
+    statusCode: number;
+    constructor(message) {
+        super(message);
+        this.name = 'UserError';
+        this.statusCode = 400;
+        this.message = message;
+    }
+}
+
+export { MondayError, DatabaseError, UserError };
