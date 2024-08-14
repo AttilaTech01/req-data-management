@@ -60,7 +60,7 @@ class MondayRepository {
                     Authorization: process.env.MONDAY_ACCESS_TOKEN,
                 },
                 data: {
-                    query: ` query { items_page_by_column_values (board_id: ${configs.board_id}, columns: [{column_id: ${configs.category_status}, column_values: "${configs.to_categorized_status_value}"}]) { cursor items { id name column_values {id text}}}}`,
+                    query: ` query { items_page_by_column_values (board_id: ${configs.board_id}, columns: [{column_id: "${configs.category_status}", column_values: "${configs.to_categorized_status_value}"}]) { cursor items { id name column_values {id text}}}}`,
                 },
             });
 
