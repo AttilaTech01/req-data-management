@@ -266,7 +266,7 @@ class ReqService {
         }
     }
 
-    static async dailyLeadsCategorisation(req: Request): Promise<any> {
+    static async updateLeadsCategorisation(req: Request): Promise<any> {
         try {
             const { user } = req.query;
 

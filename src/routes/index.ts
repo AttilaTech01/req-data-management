@@ -5,7 +5,7 @@ import {
     getUnVerifiedLeads,
     createVerifiedSecteurs,
     UpdateVerifiedLeads,
-    dailyLeadsCategorisation,
+    updateLeadsCategorisation as updateLeadsCategorisation,
 } from '../controllers/controller';
 
 const router = express();
@@ -24,9 +24,9 @@ router.get('/health', (req, res) => {
 router.get('/get-all-items', (req, res, next) => {
     getAllItems(req, res, next);
 });
-
-router.get('/get-categorized-leads', (req, res, next) => {
-    dailyLeadsCategorisation(req, res, next);
+//
+router.patch('/update-categorized-leads', (req, res, next) => {
+    updateLeadsCategorisation(req, res, next);
 });
 
 // VERIFICATION

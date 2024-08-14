@@ -211,7 +211,7 @@ async def get_facebook_info(company_name):
                      return None
 
                 # Extract Phone
-                phone_pattern = re.compile(r"^[0-9]{3}-[0-9]{3}-[0-9]{4}$")
+                phone_pattern = re.compile(r"\(\d{3}\) \d{3}-\d{4}")
                 found_phone = re.findall(phone_pattern, page_content)
 
 

@@ -11,9 +11,9 @@ export async function getAllItems(req, res, next): Promise<void> {
     }
 }
 
-export async function dailyLeadsCategorisation(req, res, next): Promise<void> {
+export async function updateLeadsCategorisation(req, res, next): Promise<void> {
     try {
-        await reqService.dailyLeadsCategorisation(req);
+        await reqService.updateLeadsCategorisation(req);
 
         return res.status(200).send({ message: 'items categorized successfully' });
     } catch (err) {
