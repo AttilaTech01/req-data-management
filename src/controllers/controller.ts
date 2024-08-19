@@ -1,4 +1,5 @@
 import reqService from '../services/req-service';
+import { Duplicate } from '../models/duplicate';
 
 // LEADS
 export async function getAllItems(req, res, next): Promise<void> {
@@ -24,10 +25,12 @@ export async function updateLeadsCategorisation(req, res, next): Promise<void> {
 
 export async function duplicatesVerification(req, res, next): Promise<void> {
     try {
-        await reqService.duplicatesVerification(req);
-        return res
-            .status(200)
-            .send({ message: 'Duplicates have been verified successfully' });
+        const response: Duplicate[] = await reqService.duplicatesVerification(req);
+
+        return res.status(200).send({
+            message: 'Duplicates have been verified successfully',
+            data: response,
+        });
     } catch (err) {
         console.error(err);
         next(err);

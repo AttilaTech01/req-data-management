@@ -23,19 +23,13 @@
         "category_status": "statut0__1",
         "categorized_status_value": "Fait",
         "to_categorized_status_value": "Synchronisation",
-        "duplicates_status": "status97__1",
+        "duplicates_group_id": "new_group45329__1",
+        "duplicates_status_column_id": "status97__1",
         "duplicates_ok_status_value": "Ok",
         "duplicates_not_ok_status_value": "Doublon",
-        "to_check_duplicates_status_value": "Attente",
-        "board_ids_for_duplicates": [
-            "6864912140",
-            "6864912145",
-            "6864912130",
-            "6864912136",
-            "6864912133",
-            "6864912137",
-            "6864912113",
-            "6864912150"
+        "duplicates_boards_to_check_id": [
+            6864912140, 6864912145, 6864912130, 6864912136, 6864912133, 6864912137,
+            6864912113, 6864912150
         ]
     }
 }

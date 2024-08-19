@@ -4,10 +4,14 @@ import reqRepository from '../repositories/req-database-repository';
 import { categories } from '../models/categories';
 import { UserError } from '../models/customErrors';
 import { itemToBusiness } from '../models/getItemsResponse';
+import { resultToItemList } from '../models/getItemsFromGroupResponse';
+import { getItemsPageByColumnValuesResponse } from '../models/getItemsPageByColumnValuesResponse';
 import { unverifiedLeadToBusiness } from '../models/getUnverifiedLeadsResponse';
 import { unverifiedSecteurToSecteur } from '../models/getUnverifiedSecteursResponse';
 import { MondayConfig } from '../models/mondayConfig';
 import mondayConfigService from './monday-config-service';
+import { MondayItem } from '../models/mondayItem';
+import { Duplicate } from '../models/duplicate';
 
 class ReqService {
     // LEADS
@@ -104,7 +108,7 @@ class ReqService {
                 await reqRepository.customQueryDB(queryStr);
 
                 // Update monday status
-                await mondayRepository.updateCategorizedLeadStatus(
+                await mondayRepository.updateMondayStatus(
                     userConfigInfos.new_entries.board_id,
                     element.id,
                     userConfigInfos.new_entries.category_status,
@@ -119,10 +123,9 @@ class ReqService {
         }
     }
 
-    static async duplicatesVerification(req: Request): Promise<boolean> {
+    static async duplicatesVerification(req: Request): Promise<Duplicate[]> {
         try {
             const { user } = req.query;
-
             if (!user || typeof user !== 'string') {
                 throw new UserError('User must be specified');
             }
@@ -130,9 +133,67 @@ class ReqService {
                 user
             );
 
-            // insert business logic here
+            const itemsToVerify: MondayItem[] = resultToItemList(
+                await mondayRepository.getItemsFromGroup(
+                    userConfigInfos.new_entries.board_id,
+                    userConfigInfos.new_entries.duplicates_group_id
+                )
+            );
+            const boardsToVerify =
+                userConfigInfos.new_entries.duplicates_boards_to_check_id;
+            let itemsWithDuplicates: Duplicate[] = [];
 
-            return true;
+            for (let item of itemsToVerify) {
+                let hasDuplicate: boolean = false;
+                const emailValue: string = mondayConfigService
+                    .FindColumnValuefromId(
+                        item,
+                        userConfigInfos.new_entries.email_column_id
+                    )
+                    .toString();
+
+                for (let boardId of boardsToVerify) {
+                    const foundDuplicates: getItemsPageByColumnValuesResponse =
+                        await mondayRepository.getItemsByColumnValues(
+                            boardId,
+                            userConfigInfos.new_entries.email_column_id,
+                            [emailValue]
+                        );
+
+                    const isDuplicate: number =
+                        boardId === userConfigInfos.new_entries.board_id ? 1 : 0;
+
+                    if (foundDuplicates.items.length > isDuplicate) {
+                        // If a duplicate is found, update status to NOT OK
+                        await mondayRepository.updateMondayStatus(
+                            userConfigInfos.new_entries.board_id,
+                            item.id,
+                            userConfigInfos.new_entries.duplicates_status_column_id,
+                            userConfigInfos.new_entries.duplicates_not_ok_status_value
+                        );
+                        // Item is gonna be sent to user
+                        itemsWithDuplicates.push({
+                            id: item.id,
+                            name: item.name,
+                            boardId: boardId,
+                        });
+                        hasDuplicate = true;
+                        break;
+                    }
+                }
+
+                if (!hasDuplicate) {
+                    // If no duplicate is found, update status to OK
+                    await mondayRepository.updateMondayStatus(
+                        userConfigInfos.new_entries.board_id,
+                        item.id,
+                        userConfigInfos.new_entries.duplicates_status_column_id,
+                        userConfigInfos.new_entries.duplicates_ok_status_value
+                    );
+                }
+            }
+
+            return itemsWithDuplicates;
         } catch (error) {
             console.log(error);
             throw error;

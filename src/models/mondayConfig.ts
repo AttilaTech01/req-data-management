@@ -23,10 +23,10 @@ export interface MondayConfig {
         category_status: string;
         categorized_status_value: string;
         to_categorized_status_value: string;
-        duplicates_status: string;
+        duplicates_group_id: string;
+        duplicates_status_column_id: string;
         duplicates_ok_status_value: string;
         duplicates_not_ok_status_value: string;
-        to_check_duplicates_status_value: string;
-        board_ids_for_duplicates: string[];
+        duplicates_boards_to_check_id: number[];
     };
 }
