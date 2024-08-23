@@ -143,6 +143,7 @@ class ReqService {
                 userConfigInfos.new_entries.duplicates_boards_to_check_id;
             let itemsWithDuplicates: Duplicate[] = [];
 
+            // For each item, find the email value and verify that no duplicate exist in given list of boards
             for (let item of itemsToVerify) {
                 let hasDuplicate: boolean = false;
                 const emailValue: string = mondayConfigService
@@ -301,6 +302,8 @@ class ReqService {
         }
     }
 
+    // NOT NEEDED ANYMORE
+    /*
     // SECTEURS
     // Function that create secteur that are not verified to monday
     static async getUnVerifiedSecteurs(): Promise<any> {
@@ -398,8 +401,10 @@ class ReqService {
             throw error;
         }
     }
+    */
 
-    // TEMPORARY
+    // BD MIGRATION DONE
+    /*
     static async nameTransfer(): Promise<any> {
         try {
             const queryStr =
@@ -420,6 +425,7 @@ class ReqService {
             throw error;
         }
     }
+    */
 }
 
 export default ReqService;

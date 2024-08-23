@@ -2,9 +2,7 @@ import express from 'express';
 import {
     duplicatesVerification,
     getAllItems,
-    getUnVerifiedSecteurs,
     getUnVerifiedLeads,
-    createVerifiedSecteurs,
     UpdateVerifiedLeads,
     updateLeadsCategorisation as updateLeadsCategorisation,
 } from '../controllers/controller';
@@ -43,6 +41,8 @@ router.patch('/update-verified-leads', (req, res, next) => {
     UpdateVerifiedLeads(req, res, next);
 });
 
+// NOT NEEDED ANYMORE
+/*
 // SECTEURS
 router.get('/get-unverified-secteur', (req, res, next) => {
     getUnVerifiedSecteurs(req, res, next);
@@ -51,6 +51,7 @@ router.get('/get-unverified-secteur', (req, res, next) => {
 router.post('/create-verif-secteur', (req, res, next) => {
     createVerifiedSecteurs(req, res, next);
 });
+*/
 
 // FUNCTIONS
 function getHealth() {

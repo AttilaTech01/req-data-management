@@ -114,7 +114,8 @@ class ReqDatabaseRepository {
         return itemsToReturn;
     }
 
-    // TEMPORARY
+    // BD MIGRATION DONE
+    /*
     static async getMergeNameItems(queryStr): Promise<any> {
         let itemsToReturn = [];
 
@@ -144,6 +145,7 @@ class ReqDatabaseRepository {
         }
         return itemsToReturn;
     }
+    */
 }
 
 export default ReqDatabaseRepository;

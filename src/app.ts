@@ -3,10 +3,10 @@ import dotenv from 'dotenv';
 import routes from './routes';
 import errorHandler from './middlewares/errorHandlerMiddleware';
 import Bugsnag from './BugSnag';
-import reqService from './services/req-service';
 const cron = require('node-cron');
 dotenv.config({ path: './.env' });
 
+// BD MIGRATION DONE
 //cron.schedule('*/2 * * * *', async () => {
 //    console.log('Cron job executed at:', new Date());
 //    await reqService.nameTransfer();

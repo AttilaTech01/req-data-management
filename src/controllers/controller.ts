@@ -62,6 +62,8 @@ export async function UpdateVerifiedLeads(req, res, next): Promise<void> {
     }
 }
 
+// NOT NEEDED ANYMORE
+/*
 // SECTEURS
 export async function getUnVerifiedSecteurs(req, res, next): Promise<void> {
     try {
@@ -86,3 +88,4 @@ export async function createVerifiedSecteurs(req, res, next): Promise<void> {
         next(err);
     }
 }
+*/

@@ -33,21 +33,20 @@ PORT=8080
 MONDAY_ACCESS_TOKEN={insert your monday.com access token here}
 ```
 
-## Routes details
-
-Insert route details here
-
 # Endpoints
 
 ## Base
 
-URL Toutes les requêtes à l'API doivent utiliser la base URL suivante : N/D
+**URL** : `/`\
+**URL** : `/health`\
+**Méthode** : `GET`\
+**Description** : Retourne un succès et le message "Healthy" si le serveur est en actif et fonctionnel.
 
-## Create Monday items
+## Entrée de Données
 
-**URL** : `/get-all-items`
-**Méthode** : `GET`
-**Description** : Cette fonctionnalité prend tous les éléments qui ne sont actuellement pas dans votre CRM Monday et les ajoute à votre CRM.
+**URL** : `/get-all-items`\
+**Méthode** : `GET`\
+**Description** : Cette fonctionnalité prend de nouveaux leads de la BD et les ajoute à votre CRM.
 | Paramètre | Type | Obligatoire | Description |
 |-----------|--------|-------------|--------------------------------------------------------------|
 | user | string | Oui | ID utilisateur |
@@ -55,35 +54,42 @@ URL Toutes les requêtes à l'API doivent utiliser la base URL suivante : N/D
 | mrc | int | Non | ID de la MRC à ajouter à votre CRM |
 | limit | int | Non | Limite des leads à ajouter à votre CRM (par défaut à 50) |
 
-## Get Unverified Leads
+**URL** : `/update-categorized-leads`\
+**Méthode** : `PATCH`\
+**Description** : Met à jour la base de données avec les catégories choisies manuellement.
 
-Ce Features sert à prendre tous les leads que l'algorithme n'a pas été capable de trouver et les envoie vers le CRM pour faire une vérif humaine.
+**URL** : `/verify-duplicates`\
+**Méthode** : `GET`\
+**Description** : ...
+| Paramètre | Type | Obligatoire | Description |
+|-----------|--------|-------------|--------------------------------------------------------------|
+| user | string | Oui | ID utilisateur |
 
-**URL** : `/get-unverified-leads`
-**Méthode** : `GET`
+## Vérification de Leads
+
+**URL** : `/get-unverified-leads`\
+**Méthode** : `GET`\
 **Description** : Cette fonctionnalité ajoute tous les leads que l'algorithme n'a pas pu analyser à votre tableau de vérification des leads Monday.
 
-**URL** : `/update-unverified-leads`
-**Méthode** : `PATCH`
+**URL** : `/update-verified-leads`\
+**Méthode** : `PATCH`\
 **Description** : Met à jour la base de données avec les emails vérifiés manuellement.
 
-## Get unverified secteur
+## OBSOLÈTE - Secteurs
 
-Ce feature prend tous les leads que leur secteur n'est pas dans la table secteur de la base de donnée pour qu'un humain associe le secteur à une catégorie dans le CRM.
-
-**URL** : `/create-verif-secteur`
-**Méthode** : `POST`
+**URL** : `/create-verif-secteur`\
+**Méthode** : `POST`\
 **Description** : Cette fonctionnalité récupère tous les leads de la table localisation où leur secteur n'est pas dans la table secteur..
 
-**URL** : `/get-unverified-secteur`
-**Méthode** : `GET`
+**URL** : `/get-unverified-secteur`\
+**Méthode** : `GET`\
 **Description** : Met à jour la base de données avec les secteurs vérifiés.
 
 ## ID references
 
-Voici une liste de tous les ID que vous pouvez utiliser dans vos parameters.
+Voici une liste de tous les ID que vous pouvez utiliser dans vos params.
 
-### MRC:
+### MRC :
 
 | ID  | MRC                           |
 | --- | ----------------------------- |
@@ -103,9 +109,9 @@ Voici une liste de tous les ID que vous pouvez utiliser dans vos parameters.
 | 114 | Côte-Nord                     |
 | 115 | Nord-du-Québec                |
 
-### Category:
+### Category :
 
-| ID  | MRC                   |
+| ID  | Category              |
 | --- | --------------------- |
 | 1   | Construction          |
 | 2   | Tourisme              |
@@ -122,3 +128,10 @@ Voici une liste de tous les ID que vous pouvez utiliser dans vos parameters.
 | 13  | Éducation             |
 | 14  | Énergie               |
 | 15  | Services Pro          |
+
+### User :
+
+| ID      | User                 |
+| ------- | -------------------- |
+| fyr     | Groupe Fyr           |
+| galilee | Galilée Construction |
