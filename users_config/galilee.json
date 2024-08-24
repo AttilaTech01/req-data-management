@@ -7,6 +7,7 @@
         "verified_status_value": "Vérifié-2",
         "db_updated_status_value": "DB Updaté TEST",
         "email_column_id": "e_mail1__1",
+        "telephone_column_id": "t_l_phone8__1",
         "db_id_column_id": "chiffres__1"
     },
     "new_entries": {
@@ -21,6 +22,14 @@
         "db_id_column_id": "chiffres6__1",
         "category_status": "statut0__1",
         "categorized_status_value": "Fait",
-        "to_categorized_status_value": "Synchronisation"
+        "to_categorized_status_value": "Synchronisation",
+        "duplicates_group_id": "new_group45329__1",
+        "duplicates_status_column_id": "status97__1",
+        "duplicates_ok_status_value": "Ok",
+        "duplicates_not_ok_status_value": "Doublon",
+        "duplicates_boards_to_check_id": [
+            6864912140, 6864912145, 6864912130, 6864912136, 6864912133, 6864912137,
+            6864912113, 6864912150
+        ]
     }
 }

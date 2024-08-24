@@ -2,6 +2,7 @@ import axios from 'axios';
 import { isMondayErrorResponse, throwMondayError } from '../utils/mondayErrorHandler';
 import { Business } from '../models/business';
 import { getItemsPageByColumnValuesResponse } from '../models/getItemsPageByColumnValuesResponse';
+import { getItemsFromGroupResponse } from '../models/getItemsFromGroupResponse';
 import { MondayConfig } from '../models/mondayConfig';
 import { Secteur } from '../models/secteur';
 
@@ -74,7 +75,7 @@ class MondayRepository {
         }
     }
 
-    static async updateCategorizedLeadStatus(
+    static async updateMondayStatus(
         boardId: number,
         itemId: number,
         columnId: string,
@@ -97,6 +98,59 @@ class MondayRepository {
             }
 
             return true;
+        } catch (error) {
+            throw throwMondayError(error);
+        }
+    }
+
+    static async getItemsFromGroup(
+        boardId: number,
+        groupId: string
+    ): Promise<getItemsFromGroupResponse> {
+        try {
+            const response = await axios({
+                url: 'https://api.monday.com/v2',
+                method: 'post',
+                headers: {
+                    Authorization: process.env.MONDAY_ACCESS_TOKEN,
+                },
+                data: {
+                    query: `query { boards (ids: ${boardId}) { groups (ids: [\"${groupId}\"]) { title id items_page { items { id name column_values { id text }}}}}}`,
+                },
+            });
+
+            if (isMondayErrorResponse(response.data)) {
+                throw response.data;
+            }
+
+            return response.data.data;
+        } catch (error) {
+            throw throwMondayError(error);
+        }
+    }
+
+    static async getItemsByColumnValues(
+        boardId: number,
+        columnId: string,
+        columnValues: string[]
+    ): Promise<getItemsPageByColumnValuesResponse> {
+        try {
+            const response = await axios({
+                url: 'https://api.monday.com/v2',
+                method: 'post',
+                headers: {
+                    Authorization: process.env.MONDAY_ACCESS_TOKEN,
+                },
+                data: {
+                    query: `query { items_page_by_column_values (board_id: ${boardId}, columns: [{column_id: \"${columnId}\", column_values: \"${columnValues}\"}]) { cursor items { id name column_values {id text} }}}`,
+                },
+            });
+
+            if (isMondayErrorResponse(response.data)) {
+                throw response.data;
+            }
+
+            return response.data.data.items_page_by_column_values;
         } catch (error) {
             throw throwMondayError(error);
         }

@@ -11,7 +11,7 @@
         "db_id_column_id": "chiffres__1"
     },
     "new_entries": {
-        "board_id": 6803849261,
+        "board_id": 7225111973,
         "group_id": "new_group42707__1",
         "category_column_id": "statut__1",
         "city_column_id": "texte2__1",
@@ -22,6 +22,13 @@
         "db_id_column_id": "chiffres8__1",
         "category_status": "statut5__1",
         "categorized_status_value": "Fait",
-        "to_categorized_status_value": "Synchronisation"
+        "to_categorized_status_value": "Synchronisation",
+        "duplicates_group_id": "new_group4255__1",
+        "duplicates_status_column_id": "status8__1",
+        "duplicates_ok_status_value": "Ok",
+        "duplicates_not_ok_status_value": "Doublon",
+        "duplicates_boards_to_check_id": [
+            7225111973, 6819684654, 6823505490, 6823558881, 6819986368
+        ]
     }
 }
