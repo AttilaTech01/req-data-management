@@ -15,7 +15,7 @@ def get_leads_from_database():
         database="leads"
     )
     
-    query = 'Select DISTINCT l.telephone, l.email, l.treshold, l.company_name, l.id from localisation l JOIN ville v on l.ville = v.ville_name JOIN mrc on v.mrc_id = mrc.mrc_id where l.email is NULL and mrc.mrc_id in (100,101,107,108,111,112) LIMIT 5'
+    query = 'Select DISTINCT l.telephone, l.email, l.treshold, l.company_name, l.id from localisation l JOIN ville v on l.ville = v.ville_name JOIN mrc on v.mrc_id = mrc.mrc_id where l.email is NULL and l.company_name is not NULL and mrc.mrc_id in (100,101,107,108,111,112) LIMIT 5'
 
     mycursor = mydb.cursor()
     mycursor.execute(query)
@@ -178,6 +178,7 @@ async def get_facebook_info(company_name):
     async with async_playwright() as p:
         try: 
             browser = await p.chromium.launch(headless=False)  # Set headless=True for headless mode
+            # BUG - ne semble même pas lancer le browser
             context = await browser.new_context(storage_state="facebookcookie.json")
             page = await context.new_page()
 
@@ -249,6 +250,7 @@ async def get_website_url(company_name):
                     # Extraire toutes les URLs des résultats de recherche
                     
                     await page.wait_for_selector('h3')
+                    # BUG - la liste ne fonctionne pas, fonctionne si revert à first_link
                     links = await page.query_selector_all('h3')
 
                     # Looks in the links if links contains Pages Jaunes
@@ -351,7 +353,6 @@ async def main():
     # Each lead is an array of values: telephone, email, treshold, company_name, id
     for idx, lead in enumerate(leads):
         print(f"1. Lead #{idx + 1} in process : {lead}")
-        return "End of the script"
 
         # Trying to get email from FB
         # get_facebook_info return { "email" : company_emails, "phone": company_phone }
@@ -359,14 +360,14 @@ async def main():
         print("2. Facebook infos found : ", facebook_info)
 
         if facebook_info:
-            # Process of verification
+            # Process of verification, returns [verified_emails, treshold]
             lead_result = verification_email(facebook_info["email"], lead[3])
             
             # Update database
             if lead_result[0] != "INVALID":
                 found += 1
                 # update_database(lead_id, email, treshold, telephone)
-                #update_database(lead[4], lead_result[0], lead_result[1], facebook_info["phone"] or "NULL")
+                update_database(lead[4], lead_result[0], lead_result[1], facebook_info["phone"] or "NULL")
                 print("-----------------------------------------------------")
                 continue
              
@@ -383,7 +384,7 @@ async def main():
         if lead_result[0] != "INVALID":
             found += 1
             
-        #update_database(lead[4], lead_result[0], lead_result[1], "NULL")
+        update_database(lead[4], lead_result[0], lead_result[1], "NULL")
         print("-----------------------------------------------------")
     
     print("Total : ", total)
