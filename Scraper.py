@@ -11,13 +11,11 @@ def get_leads_from_database():
     mydb = mysql.connector.connect(
         host="localhost",
         user="root",
-        #password="root",
         password="root",
         database="leads"
     )
     
-    query = 'Select DISTINCT localisation.telephone, localisation.email, localisation.treshold, name.Nom, localisation.id from localisation JOIN name on localisation.neq = name.NEQ JOIN ville v on localisation.ville = v.ville_name JOIN mrc on v.mrc_id = mrc.mrc_id where localisation.email is NULL and mrc.mrc_id in (100,101,107,108,111,112) LIMIT 5'
-    #query = 'Select DISTINCT localisation.téléphone, localisation.courriel, localisation.treshold, name.Nom, localisation.id from localisation JOIN name on localisation.neq = name.NEQ JOIN ville v on localisation.ville = v.ville_name JOIN mrc on v.mrc_id = mrc.mrc_id where localisation.courriel is NULL and mrc.mrc_id in (100,101,107,108,111,112) LIMIT 1'
+    query = 'Select DISTINCT l.telephone, l.email, l.treshold, l.company_name, l.id from localisation l JOIN ville v on l.ville = v.ville_name JOIN mrc on v.mrc_id = mrc.mrc_id where l.email is NULL and mrc.mrc_id in (100,101,107,108,111,112) LIMIT 5'
 
     mycursor = mydb.cursor()
     mycursor.execute(query)
@@ -38,7 +36,6 @@ def update_database(lead_id, email, treshold, telephone):
     rounded_treshold = round(treshold, 2)
     
     query =f"Update localisation set email = '{email}', treshold = {rounded_treshold}, telephone = {telephone}  where id= {lead_id};"
-    #query =f"Update localisation set courriel = '{email}', treshold = {rounded_treshold}, téléphone = {telephone}  where id= {lead_id};"
     print(f"6. Updating database item {lead_id} with : {email} - {rounded_treshold} - {telephone}")
     mycursor = mydb.cursor()
     mycursor.execute(query)
@@ -351,9 +348,10 @@ async def main():
     found = 0
     
     # Looping over our database leads result
-    # Each lead is an array of values
+    # Each lead is an array of values: telephone, email, treshold, company_name, id
     for idx, lead in enumerate(leads):
         print(f"1. Lead #{idx + 1} in process : {lead}")
+        return "End of the script"
 
         # Trying to get email from FB
         # get_facebook_info return { "email" : company_emails, "phone": company_phone }
@@ -367,7 +365,8 @@ async def main():
             # Update database
             if lead_result[0] != "INVALID":
                 found += 1
-                update_database(lead[4], lead_result[0], lead_result[1], facebook_info["phone"] or "NULL")
+                # update_database(lead_id, email, treshold, telephone)
+                #update_database(lead[4], lead_result[0], lead_result[1], facebook_info["phone"] or "NULL")
                 print("-----------------------------------------------------")
                 continue
              
@@ -384,7 +383,7 @@ async def main():
         if lead_result[0] != "INVALID":
             found += 1
             
-        update_database(lead[4], lead_result[0], lead_result[1], "NULL")
+        #update_database(lead[4], lead_result[0], lead_result[1], "NULL")
         print("-----------------------------------------------------")
     
     print("Total : ", total)
