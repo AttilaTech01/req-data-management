@@ -212,6 +212,10 @@ async def get_facebook_info(company_name):
                 phone_pattern = re.compile(r"\(\d{3}\) \d{3}-\d{4}")
                 found_phone = re.findall(phone_pattern, page_content)
 
+                # Format to get the first phone number if it's a list
+
+                if isinstance(found_phone, list):
+                    found_phone = found_phone[0]
 
                 founds_infos = {
                      "email" : company_emails,
@@ -264,21 +268,11 @@ async def get_website_url(company_name):
                             if re.search(regex, link):
                                 list_of_links.remove(link)
                     
-                   # for link in links:
-                        #print("This is the link",await link.inner_text())
-                        #Look if the name of the website is in the list of website to skip
-                        #if any(keyword in await link.inner_text() for keyword in website_to_skip):
-                             # continue
-                        #Cancel the Loop when the link that isn't in the list of website to skip is there
-                        #website_name = await link.inner_text()
+
                     
-                       # break
-                    print("This is the website name", website_name)
-                    #await link.click()
-                    #pageUrl = page.url
-                    print(pageUrl)
                     await browser.close()
-                    return pageUrl
+                    print(list_of_links)
+                    return list_of_links[0]
                 except:
                      return None
 
@@ -383,7 +377,7 @@ async def main():
             if lead_result[0] != "INVALID":
                 found += 1
                 # update_database(lead_id, email, treshold, telephone)
-              #  update_database(lead[4], lead_result[0], lead_result[1], facebook_info["phone"] or "NULL")
+                #update_database(lead[4], lead_result[0], lead_result[1], facebook_info["phone"] or "NULL")
                 print("-----------------------------------------------------")
                 continue
              
@@ -400,7 +394,7 @@ async def main():
         if lead_result[0] != "INVALID":
             found += 1
             
-       # update_database(lead[4], lead_result[0], lead_result[1], "NULL")
+        #update_database(lead[4], lead_result[0], lead_result[1], "NULL")
         print("-----------------------------------------------------")
     
     print("Total : ", total)
