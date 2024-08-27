@@ -251,18 +251,34 @@ async def get_website_url(company_name):
                     
                     await page.wait_for_selector('h3')
                     # BUG - la liste ne fonctionne pas, fonctionne si revert à first_link
-                    links = await page.query_selector_all('h3')
+                    # Fix - Le problème est que le result de la loop nous sort une inner text et non un lien et que l'on ne peut pas interagir avec le link
+                    # https://stackoverflow.com/questions/76624911/get-href-link-using-python-playwright
+                    # !! Looks how locator works
+                    link_locators = await page.locator('.byrV5b').all_inner_texts()
+                    #for _ in link_locators:
+                    print("Website URL")
+                    print(link_locators)
+
 
                     # Looks in the links if links contains Pages Jaunes
+                    links = await page.query_selector_all('h3')
                     website_to_skip = ["LinkedIn", "Pages Jaunes", "YellowPages.ca", "Canada 411", "PagesJaunes.ca"]
+                    website_name = None
                     for link in links:
+                        #print("This is the link",await link.inner_text())
+                        #Look if the name of the website is in the list of website to skip
                         if any(keyword in await link.inner_text() for keyword in website_to_skip):
                               continue
-                        await link.click()
-                        pageUrl = page.url
-                        print(pageUrl)
-                        await browser.close()
-                        return pageUrl
+                        #Cancel the Loop when the link that isn't in the list of website to skip is there
+                        #website_name = await link.inner_text()
+                    
+                        break
+                    print("This is the website name", website_name)
+                    #await link.click()
+                    #pageUrl = page.url
+                    print(pageUrl)
+                    await browser.close()
+                    return pageUrl
                 except:
                      return None
 
@@ -367,7 +383,7 @@ async def main():
             if lead_result[0] != "INVALID":
                 found += 1
                 # update_database(lead_id, email, treshold, telephone)
-                update_database(lead[4], lead_result[0], lead_result[1], facebook_info["phone"] or "NULL")
+              #  update_database(lead[4], lead_result[0], lead_result[1], facebook_info["phone"] or "NULL")
                 print("-----------------------------------------------------")
                 continue
              
@@ -384,7 +400,7 @@ async def main():
         if lead_result[0] != "INVALID":
             found += 1
             
-        update_database(lead[4], lead_result[0], lead_result[1], "NULL")
+       # update_database(lead[4], lead_result[0], lead_result[1], "NULL")
         print("-----------------------------------------------------")
     
     print("Total : ", total)
