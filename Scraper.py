@@ -250,29 +250,29 @@ async def get_website_url(company_name):
                     # Extraire toutes les URLs des résultats de recherche
                     
                     await page.wait_for_selector('h3')
-                    # BUG - la liste ne fonctionne pas, fonctionne si revert à first_link
-                    # Fix - Le problème est que le result de la loop nous sort une inner text et non un lien et que l'on ne peut pas interagir avec le link
-                    # https://stackoverflow.com/questions/76624911/get-href-link-using-python-playwright
-                    # !! Looks how locator works
-                    link_locators = await page.locator('.byrV5b').all_inner_texts()
-                    #for _ in link_locators:
+                    
+                    #Return un array des liens de la page
+                    list_of_links = await page.locator('.byrV5b').all_inner_texts()
+                    
                     print("Website URL")
-                    print(link_locators)
-
-
-                    # Looks in the links if links contains Pages Jaunes
-                    links = await page.query_selector_all('h3')
-                    website_to_skip = ["LinkedIn", "Pages Jaunes", "YellowPages.ca", "Canada 411", "PagesJaunes.ca"]
-                    website_name = None
-                    for link in links:
+                    print(list_of_links)
+                    # List of website url that we want to skip
+                    website_to_skip_regex = [r"https://ca.linkedin.com/", r"https://www.pagesjaunes.ca/", r"https://www.yellowpages.ca/", r"https://www.fr.canada411.ca/"]
+                    
+                    for link in list_of_links:
+                        for regex in website_to_skip_regex:
+                            if re.search(regex, link):
+                                list_of_links.remove(link)
+                    
+                   # for link in links:
                         #print("This is the link",await link.inner_text())
                         #Look if the name of the website is in the list of website to skip
-                        if any(keyword in await link.inner_text() for keyword in website_to_skip):
-                              continue
+                        #if any(keyword in await link.inner_text() for keyword in website_to_skip):
+                             # continue
                         #Cancel the Loop when the link that isn't in the list of website to skip is there
                         #website_name = await link.inner_text()
                     
-                        break
+                       # break
                     print("This is the website name", website_name)
                     #await link.click()
                     #pageUrl = page.url
