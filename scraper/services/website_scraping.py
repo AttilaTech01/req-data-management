@@ -3,9 +3,7 @@ from playwright.async_api import async_playwright
 import re
 from urllib.parse import urlparse
 
-urlstring = "https://www.lenouvelliste.ca › 2014/01/24 › le-clan-dyv..."
-url = url = urlparse(urlstring)
-print(url.hostname)
+
 
 async def get_website_url(company_name):
            async with async_playwright() as p:
@@ -44,11 +42,11 @@ async def get_website_url(company_name):
                     print(list_of_links)
                     
                     # Format the string to only gets the url
-                    url = urlparse(urlstring)
+                    url = urlparse(list_of_links[0])
                     
                     url = url.hostname.split("›")
 
-                    return url[0]
+                    return "https://"+url[0]
                 except:
                      return None
                 
@@ -72,7 +70,7 @@ async def get_website_info(website):
                     # Search regex pattern in my html content
                     pattern = '[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
                     found_emails = re.findall(pattern, page_content)
-                    phone_pattern = re.compile(r"^[0-9]{3}-[0-9]{3}-[0-9]{4}$")
+                    phone_pattern = re.compile(r"\(\d{3}\) \d{3}-\d{4}")
                     found_phone = re.findall(phone_pattern, page_content)
 
                     # Search for contact page if the email not found

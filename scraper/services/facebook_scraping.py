@@ -31,9 +31,9 @@ async def get_facebook_info(company_name):
                 # Extract email 
                 page_content = await page.content()
 
-                email_pattern = re.compile(r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}")
+                email_pattern = '[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
 
-                company_emails = email_pattern.findall(page_content)
+                company_emails = re.findall(email_pattern,page_content)
                 if len(company_emails) < 1:
                      return None
 
