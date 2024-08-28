@@ -4,7 +4,6 @@ import { Business } from '../models/business';
 import { getItemsPageByColumnValuesResponse } from '../models/getItemsPageByColumnValuesResponse';
 import { getItemsFromGroupResponse } from '../models/getItemsFromGroupResponse';
 import { MondayConfig } from '../models/mondayConfig';
-import { Secteur } from '../models/secteur';
 
 class MondayRepository {
     // LEADS
@@ -236,83 +235,6 @@ class MondayRepository {
                 },
                 data: {
                     query: `mutation {change_multiple_column_values(item_id: ${itemId}, board_id: ${boardId}, column_values: \"{\\\"${columnId}\\\" : {\\\"label\\\" : \\\"${columnValue}\\\"}}\") {id}}`,
-                },
-            });
-
-            if (isMondayErrorResponse(response.data)) {
-                throw response.data;
-            }
-
-            return true;
-        } catch (error) {
-            throw throwMondayError(error);
-        }
-    }
-
-    // SECTEURS
-    static async createUnVerifiedSecteur(item: Secteur): Promise<boolean> {
-        try {
-            const response = await axios({
-                url: 'https://api.monday.com/v2',
-                method: 'post',
-                headers: {
-                    Authorization: process.env.MONDAY_ACCESS_TOKEN,
-                },
-                data: {
-                    query: `
-                 mutation ($boardId: Int!) {create_item (board_id: $boardId, group_id: "new_group42707__1", item_name: "${item.name}") {id}}
-              `,
-                    variables: {
-                        boardId: 6819942732,
-                    },
-                },
-            });
-
-            if (isMondayErrorResponse(response.data)) {
-                throw response.data;
-            }
-
-            return true;
-        } catch (error) {
-            throw throwMondayError(error);
-        }
-    }
-
-    static async getMondayVerifiedSecteurs(): Promise<getItemsPageByColumnValuesResponse> {
-        try {
-            const response = await axios({
-                url: 'https://api.monday.com/v2',
-                method: 'post',
-                headers: {
-                    Authorization: process.env.MONDAY_ACCESS_TOKEN,
-                },
-                data: {
-                    query: 'query { items_page_by_column_values (board_id: 6819942732, columns: [{column_id: "statut4__1", column_values: "Vérifié"}]) { cursor items { id name column_values {id text} }}}',
-                },
-            });
-
-            if (isMondayErrorResponse(response.data)) {
-                throw response.data;
-            }
-
-            return response.data.data.items_page_by_column_values;
-        } catch (error) {
-            throw throwMondayError(error);
-        }
-    }
-
-    static async UpdateVerifiedSecteurStatus(itemId: number): Promise<boolean> {
-        try {
-            const response = await axios({
-                url: 'https://api.monday.com/v2',
-                method: 'post',
-                headers: {
-                    Authorization: process.env.MONDAY_ACCESS_TOKEN,
-                },
-                data: {
-                    query: `
-                 mutation {change_multiple_column_values(item_id:${itemId}, board_id:6819942732, column_values: \"{\\\"statut4__1\\\" : {\\\"label\\\" : \\\"DB Updaté\\\"}}\") {id}}
-              `,
                 },
             });
 

@@ -7,7 +7,6 @@ import { itemToBusiness } from '../models/getItemsResponse';
 import { resultToItemList } from '../models/getItemsFromGroupResponse';
 import { getItemsPageByColumnValuesResponse } from '../models/getItemsPageByColumnValuesResponse';
 import { unverifiedLeadToBusiness } from '../models/getUnverifiedLeadsResponse';
-import { unverifiedSecteurToSecteur } from '../models/getUnverifiedSecteursResponse';
 import { MondayConfig } from '../models/mondayConfig';
 import mondayConfigService from './monday-config-service';
 import { MondayItem } from '../models/mondayItem';
@@ -301,107 +300,6 @@ class ReqService {
             throw error;
         }
     }
-
-    // NOT NEEDED ANYMORE
-    /*
-    // SECTEURS
-    // Function that create secteur that are not verified to monday
-    static async getUnVerifiedSecteurs(): Promise<any> {
-        try {
-            let queryStr =
-                "SELECT DISTINCT localisation.secteur FROM localisation LEFT JOIN secteurs ON localisation.secteur = secteurs.secteur_name WHERE secteurs.secteur_name IS NULL AND localisation.secteur != '-' GROUP BY localisation.secteur LIMIT 50;";
-
-            const result = await reqRepository.getUnVerifiedSecteurs(queryStr);
-
-            if (result.length === 0) {
-                return true;
-            }
-
-            for (let index = 0; index < result.length; index++) {
-                const element = unverifiedSecteurToSecteur(result[index]);
-                await mondayRepository.createUnVerifiedSecteur(element);
-            }
-
-            return result;
-        } catch (error) {
-            throw error;
-        }
-    }
-
-    // Functions that Insert secteur to the DB and change the monday status
-    static async createVerifiedSecteurs(): Promise<any> {
-        try {
-            const VerifObject = await mondayRepository.getMondayVerifiedSecteurs();
-            const verifiedItems = VerifObject.items;
-
-            for (let index = 0; index < verifiedItems.length; index++) {
-                const element = verifiedItems[index];
-
-                // Switch on the ID of the category
-                switch (element.column_values[1].text) {
-                    case 'Construction':
-                        element.column_values[1].text = 1;
-                        break;
-                    case 'Tourisme':
-                        element.column_values[1].text = 2;
-                        break;
-                    case 'Agriculture':
-                        element.column_values[1].text = 3;
-                        break;
-                    case 'Services':
-                        element.column_values[1].text = 4;
-                        break;
-                    case 'Finance':
-                        element.column_values[1].text = 5;
-                        break;
-                    case 'Transport':
-                        element.column_values[1].text = 6;
-                        break;
-                    case 'Technologie':
-                        element.column_values[1].text = 7;
-                        break;
-                    case 'Commerce and retail':
-                        element.column_values[1].text = 8;
-                        break;
-                    case 'Art, Cultures, Loisir':
-                        element.column_values[1].text = 9;
-                        break;
-                    case 'Industriel':
-                        element.column_values[1].text = 10;
-                        break;
-                    case 'Santé':
-                        element.column_values[1].text = 11;
-                        break;
-                    case 'Real Estate':
-                        element.column_values[1].text = 12;
-                        break;
-                    case 'Éducation':
-                        element.column_values[1].text = 13;
-                        break;
-                    case 'Énergie':
-                        element.column_values[1].text = 14;
-                        break;
-                    case 'Services Pro':
-                        element.column_values[1].text = 15;
-                        break;
-                    default:
-                        break;
-                }
-                const queryStr = `INSERT INTO secteurs(secteur_name, category_id) values('${element.name}', ${element.column_values[1].text})`;
-
-                // Insert into the database the new secteurs
-                await reqRepository.customQueryDB(queryStr);
-                // Change the status of the item
-                await mondayRepository.UpdateVerifiedSecteurStatus(element.id);
-            }
-
-            return true;
-        } catch (error) {
-            console.log(error);
-            throw error;
-        }
-    }
-    */
 
     // BD MIGRATION DONE
     /*
