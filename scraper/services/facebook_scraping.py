@@ -28,37 +28,40 @@ async def get_facebook_info(company_name):
                 # Wait for the Facebook page to load
                 await page.wait_for_selector('body')
 
-                # Extract email 
-                page_content = await page.content()
-                list_of_text = await page.locator(".x9f619.x1n2onr6.x1ja2u2z.x78zum5.x2lah0s.x1qughib.x1qjc9v5.xozqiw3.x1q0g3np.x1pi30zi.x1swvt13.xyamay9.xykv574.xbmpl8g.x4cne27.xifccgj").all_inner_texts()
+                # Extract Facebook textbox content 
+                
+                facebook_textbox = await page.locator(".x9f619.x1n2onr6.x1ja2u2z.x78zum5.x2lah0s.x1qughib.x1qjc9v5.xozqiw3.x1q0g3np.x1pi30zi.x1swvt13.xyamay9.xykv574.xbmpl8g.x4cne27.xifccgj").all_inner_texts()
 
-                print("--------------------------------------------------------------------------------")
-                print("This is list of text", list_of_text)
-                print("--------------------------------------------------------------------------------")
+            # Extract the email with the regex
+                emails = []
+                phone = []
                 email_pattern = '[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
+                phone_pattern = '\(\d{3}\) \d{3}-\d{4}'
+                #company_emails = re.findall(email_pattern,page_content)
+                for text in facebook_textbox:
+                    found_emails = re.findall(email_pattern, text)
+                    found_phone = re.findall(phone_pattern, text)
+                    emails.extend(found_emails)
+                    phone.extend(found_phone)
 
-                company_emails = re.findall(email_pattern,page_content)
-                if len(company_emails) < 1:
+                print("this is the lenth of emails" , emails)
+                if len(emails) < 1:
                      return None
 
-                # Extract Phone
-                phone_pattern = re.compile(r"\(\d{3}\) \d{3}-\d{4}")
-                found_phone = re.findall(phone_pattern, page_content)
-
                 # Format to get the first phone number if it's a list
-                if isinstance(found_phone, list):
-                    found_phone = found_phone[0]
+                if isinstance(phone, list):
+                    phone = phone[0]
 
 
-                
-                founds_infos = {
-                     "email" : company_emails,
-                     "phone": found_phone or "NULL"
-                }
+                if emails:
+                    founds_infos = {
+                        "email" : emails,
+                        "phone": phone or "NULL"
+                    }
 
                 #Close and return
-                await browser.close()
-                return founds_infos
+                    await browser.close()
+                    return founds_infos
             
             # If there is no facebook links, close and return None
             await browser.close()

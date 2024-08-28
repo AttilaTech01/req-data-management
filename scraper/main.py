@@ -46,10 +46,13 @@ async def main():
             new_leads.telephone = facebook_info["phone"]
             
             # If the treshold is higher or = 0.5 update the Database
+            print("-----------------------------------------------------")
+            print(new_leads.treshold)
+            print("-----------------------------------------------------")
             if new_leads.treshold >= 0.5:
                 
                 # update_database(lead_id, email, treshold, telephone)
-                update_database(new_leads.bd_id, new_leads.email, new_leads.treshold, new_leads.telephone)
+                #update_database(new_leads.bd_id, new_leads.email, new_leads.treshold, new_leads.telephone)
                 print("-----------------------------------------------------")
                 continue
              
@@ -62,11 +65,11 @@ async def main():
         print("4. Web infos : ",website_info)
 
         # Process of verification
-        lead_result = verification_email(website_info["email"], new_leads)
-        if new_leads.email != "INVALID":
+        if website_info:
+            lead_result = verification_email(website_info["email"], new_leads)
             found += 1
             
-        update_database(new_leads.bd_id, new_leads.email, new_leads.treshold, new_leads.telephone)
+        #update_database(new_leads.bd_id, new_leads.email, new_leads.treshold, new_leads.telephone)
         print("-----------------------------------------------------")
     
     print("Total : ", total)

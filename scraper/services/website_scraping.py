@@ -65,34 +65,33 @@ async def get_website_info(website):
 
                     # Go to website and wait for page to load main page
                     await page.goto(website)
-                    page_content = await page.content()
+                   
+                    website_text = await page.locator('div').all_inner_texts()
 
-                    # Search regex pattern in my html content
-                    pattern = '[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
-                    found_emails = re.findall(pattern, page_content)
-                    phone_pattern = re.compile(r"\(\d{3}\) \d{3}-\d{4}")
-                    found_phone = re.findall(phone_pattern, page_content)
+                    emails = []
+                    phone = []
+                    email_pattern = '[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
+                    phone_pattern = '\(\d{3}\) \d{3}-\d{4}'
+                    for text in website_text:
+                        found_emails = re.findall(email_pattern, text)
+                        found_phone = re.findall(phone_pattern, text)
+                        emails.extend(found_emails)
+                        phone.extend(found_phone)
 
-                    # Search for contact page if the email not found
-                    if not found_emails:
-                        contact_button = await page.query_selector("button[name='Contact']")
-                        if contact_button and await contact_button.is_visible():
-                            await contact_button.click()
-                            await page.wait_for_timeout(1000)
-                            contact_page_content = await page.content()
-                            found_emails = re.findall(pattern, contact_page_content)
+                    if len(phone) > 1 :
+                        phone = phone[0]
 
-                            # If nothing is found in the contact
-                            if not found_emails:
-                                 await browser.close()
-                                 return founds_infos
-
-                    if found_emails:
-                        founds_infos["email"] = found_emails
-                        founds_infos["phone"] = found_phone[0] if found_phone else None
+                    if emails:
+                        founds_infos = {
+                            "email" : emails,
+                            "phone": phone or "NULL"
+                        }
+                        await browser.close()
                         return founds_infos
+                    
+                    return None
                 except:
                     print("There was an error")
+                    await browser.close()
+                    return None
 
-                await browser.close()
-                return founds_infos
