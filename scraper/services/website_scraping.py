@@ -1,7 +1,11 @@
 import asyncio
 from playwright.async_api import async_playwright
 import re
+from urllib.parse import urlparse
 
+urlstring = "https://www.lenouvelliste.ca › 2014/01/24 › le-clan-dyv..."
+url = url = urlparse(urlstring)
+print(url.hostname)
 
 async def get_website_url(company_name):
            async with async_playwright() as p:
@@ -38,7 +42,13 @@ async def get_website_url(company_name):
                     
                     await browser.close()
                     print(list_of_links)
-                    return list_of_links[0]
+                    
+                    # Format the string to only gets the url
+                    url = urlparse(urlstring)
+                    
+                    url = url.hostname.split("›")
+
+                    return url[0]
                 except:
                      return None
                 
