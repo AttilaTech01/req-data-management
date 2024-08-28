@@ -26,8 +26,8 @@ async def get_website_url(company_name):
                     #Return un array des liens de la page
                     list_of_links = await page.locator('.byrV5b').all_inner_texts()
                     
-                    print("Website URL")
-                    print(list_of_links)
+                    #print("Website URL")
+                    #print(list_of_links)
                     # List of website url that we want to skip
                     website_to_skip_regex = [r"https://ca.linkedin.com/", r"https://www.pagesjaunes.ca/", r"https://www.yellowpages.ca/", r"https://www.fr.canada411.ca/"]
                     
@@ -39,7 +39,7 @@ async def get_website_url(company_name):
 
                     
                     await browser.close()
-                    print(list_of_links)
+                    #print(list_of_links)
                     
                     # Format the string to only gets the url
                     url = urlparse(list_of_links[0])
@@ -90,7 +90,7 @@ async def get_website_info(website):
                     if found_emails:
                         founds_infos["email"] = found_emails
                         founds_infos["phone"] = found_phone[0] if found_phone else None
-
+                        return founds_infos
                 except:
                     print("There was an error")
 

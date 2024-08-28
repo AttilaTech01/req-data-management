@@ -14,7 +14,7 @@ async def get_facebook_info(company_name):
             await page.goto(f"https://www.google.com/search?q={company_name}")
 
             # Waiting for google's search list
-            await page.locator('div#search').wait_for()
+                #await page.locator('div#search').wait_for()
             page_content = await page.content()
 
             facebook_pattern = re.compile(r"https:\/\/www\.facebook\.com\/[a-zA-Z0-9\.\-\/_]+")
@@ -30,7 +30,11 @@ async def get_facebook_info(company_name):
 
                 # Extract email 
                 page_content = await page.content()
+                list_of_text = await page.locator(".x9f619.x1n2onr6.x1ja2u2z.x78zum5.x2lah0s.x1qughib.x1qjc9v5.xozqiw3.x1q0g3np.x1pi30zi.x1swvt13.xyamay9.xykv574.xbmpl8g.x4cne27.xifccgj").all_inner_texts()
 
+                print("--------------------------------------------------------------------------------")
+                print("This is list of text", list_of_text)
+                print("--------------------------------------------------------------------------------")
                 email_pattern = '[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
 
                 company_emails = re.findall(email_pattern,page_content)
