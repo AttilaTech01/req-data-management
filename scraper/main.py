@@ -3,6 +3,9 @@ from playwright.async_api import async_playwright
 import re
 from difflib import SequenceMatcher
 import mysql.connector
+from pydantic import BaseModel
+from typing import Tuple
+
 
 # Importing my modules
 from services.facebook_scraping import get_facebook_info
@@ -10,14 +13,8 @@ from services.website_scraping import get_website_url, get_website_info
 from utils.leads_verif import verification_email, format_name
 from repo.database_repo import get_leads_from_database, update_database
 
+from services.leads_class import Leads
 
-class Leads:
-    def __init__(self, company_name, bd_id) -> None:
-        self.telephone = "NULL"
-        self.bd_id = bd_id
-        self.treshold = 0
-        self.company_name = company_name
-        self.email = "INVALID"    
 
 
 async def main():
@@ -32,29 +29,12 @@ async def main():
         #Creating the Objects
         new_leads = Leads(lead[3],lead[4])
         #Formating The Name
-        new_leads.company_name = format_name(new_leads.company_name)
+        new_leads.format_name()
 
         # Trying to get email from FB
         # get_facebook_info return { "email" : company_emails, "phone": company_phone }
         facebook_info = await get_facebook_info(new_leads.company_name)
         print("2. Facebook infos found : ", facebook_info)
-
-        if facebook_info:
-            # Process of verification, update the object with the new values
-            lead_result = verification_email(facebook_info["email"], new_leads)
-            # Update the phone Number if founded
-            new_leads.telephone = facebook_info["phone"]
-            
-            # If the treshold is higher or = 0.5 update the Database
-            print("-----------------------------------------------------")
-            print(new_leads.treshold)
-            print("-----------------------------------------------------")
-            if new_leads.treshold >= 0.5:
-                
-                # update_database(lead_id, email, treshold, telephone)
-                #update_database(new_leads.bd_id, new_leads.email, new_leads.treshold, new_leads.telephone)
-                print("-----------------------------------------------------")
-                continue
              
         # Trying to get website from Google
         website_url = await get_website_url(new_leads.company_name)
@@ -63,18 +43,21 @@ async def main():
         # Trying to get email from the found website
         website_info = await get_website_info(website_url)
         print("4. Web infos : ",website_info)
-
-        # Process of verification
-        if website_info:
-            lead_result = verification_email(website_info["email"], new_leads)
-            found += 1
-            
-        #update_database(new_leads.bd_id, new_leads.email, new_leads.treshold, new_leads.telephone)
-        print("-----------------------------------------------------")
-    
-    print("Total : ", total)
-    print("Wins : ", found)
-    print("Win % : ", found * 100 / total)
+        print(facebook_info)
+        scraped_emails = [*facebook_info["email"], *website_info["email"]]
+        scraped_phone = [*facebook_info["phone"], *website_info["phone"]]
+        # verified wich emails to take
+        new_leads.email_verification(scraped_emails)
+        #Verif Phone Numbers
+        new_leads.phone_verification(scraped_phone)
+        #Verif
+        new_leads.leads_validation()
+        print("After Scraped")
+        print(new_leads.company_name, new_leads.telephone, new_leads.email)
+        # Make the phone number to the first phone found
+    #print("Total : ", total)
+    #print("Wins : ", found)
+   # print("Win % : ", found * 100 / total)
     return "End of the script"
 
 

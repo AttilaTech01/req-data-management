@@ -54,7 +54,7 @@ async def get_website_url(company_name):
 
 async def get_website_info(website):
            async with async_playwright() as p:
-                founds_infos = {"email": "INVALID", "phone": None} 
+                founds_infos = {"email": [], "phone":[]} 
                 #If no url is provided
                 if not website:
                      return founds_infos
@@ -67,31 +67,19 @@ async def get_website_info(website):
                     await page.goto(website)
                    
                     website_text = await page.locator('div').all_inner_texts()
-
-                    emails = []
-                    phone = []
+                    print(website_text)
                     email_pattern = '[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
                     phone_pattern = '\(\d{3}\) \d{3}-\d{4}'
                     for text in website_text:
                         found_emails = re.findall(email_pattern, text)
                         found_phone = re.findall(phone_pattern, text)
-                        emails.extend(found_emails)
-                        phone.extend(found_phone)
+                        founds_infos["emails"].extend(found_emails)
+                        founds_infos["phone"].extend(found_phone)
 
-                    if len(phone) > 1 :
-                        phone = phone[0]
-
-                    if emails:
-                        founds_infos = {
-                            "email" : emails,
-                            "phone": phone or "NULL"
-                        }
-                        await browser.close()
-                        return founds_infos
-                    
-                    return None
+                  
+                    await browser.close()
+                    return founds_infos
                 except:
                     print("There was an error")
                     await browser.close()
-                    return None
-
+                    return founds_infos

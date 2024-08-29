@@ -8,28 +8,24 @@ def isSimilar(a, b):
     print(f'RESULT : {result}')
     return result
 
-# Formats the email if it's an array or null
+# Formats the email if it's an array or null, Check if one of the emails contains keyword and return the emails with the keyword
 def found_emails_formatting(found_emails):
     KEYWORDS = ["info", "admin", "sales", "ventes", "contact"]
-    print('5. Found emails: ', found_emails)
-    if found_emails:    
-        if isinstance(found_emails, list):       
-            #Look if one of the email contains the keywords info or admin or sales or contact
-            for email in found_emails:
-                split_email =  email.split("@")
-                if any(substring in split_email[0] for substring in KEYWORDS):
-                    return email
-                if any(substring in split_email[1] for substring in KEYWORDS):
-                    return email
-                
-            # If no email found with keywords, return the first 3 emails
-            return found_emails[:3]
+    print('5. Found emails: ', found_emails)    
+           
+    #Look if one of the email contains the keywords info or admin or sales or contact
+    
+    split_email =  found_emails.split("@")
+    if any(substring in split_email[0] for substring in KEYWORDS):
+        return True
+    if any(substring in split_email[1] for substring in KEYWORDS):
+        return True
         
-        # If it's not a list but a str
-        else:
-            return found_emails
-    else:
-        return "INVALID"
+    # If no email found with keywords, return the first 3 emails
+    return False
+    
+
+
 # Erases "inc", "enr", " ' " from the company name   
 def format_name (name):
     name = name.lower().replace("'", '')
@@ -42,25 +38,26 @@ def format_name (name):
 
     return " ".join(list_name)
 
-
+# format the email and the company name to and test it (email needs to be a string)
 def validate_company_name(name, email):
-    print("This is the email",email)
-    email_split =  email.split('@')  
-    print(email_split)         
-    email_username = email_split[0]
-    email_username = email_username.lower().replace(' ', '')
-    email_domain = email_split[1].split('.')[0]
 
     # Normalize company name for comparison
     company_name_normalized = name.lower().replace(' ', '')
+    # Split the Username and the domain of the email
+    
+    email_split =  email.split('@')        
+    email_username = email_split[0]
+    email_username = email_username.lower().replace(' ', '')
+    email_domain = email_split[1].split('.')[0]
+    
 
     # Calculate similarity
     username_similarity = isSimilar(company_name_normalized, email_username)
     if username_similarity < 0.55:
          domain_similarity = isSimilar(company_name_normalized, email_domain)
-         return domain_similarity
+         return tuple(email,domain_similarity)
 
-    return username_similarity
+    return tuple(email,username_similarity)
 
 
 
@@ -68,7 +65,9 @@ def validate_company_name(name, email):
 def verification_email(emails, leads):
     # Getting verified emails, might be one, might be many
     verified_emails = found_emails_formatting(emails)
-    print("This is the company name", leads.company_name)
+    # Return a string or a list of email
+    #print("This is verified Emails", type(verified_emails))
+
     # If only one email is returned
         # If it didn't find any emails return Invalid
     if verified_emails == "INVALID":
