@@ -21,7 +21,7 @@ class Leads:
             # if on email return only one email
             if len(list_email) == 1:
                 #IF one result
-                email_result = validate_company_name(self.company_name, email)
+                email_result = validate_company_name(self.company_name, list_email[0])
                 self.email = email_result[0]
                 self.treshold = email_result[1]
                 return 

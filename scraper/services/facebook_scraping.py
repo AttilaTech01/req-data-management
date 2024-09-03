@@ -48,11 +48,15 @@ async def get_facebook_info(company_name):
                 for text in facebook_textbox:
                     mots = text.split()
                     for mot in mots:
+                        print("This is the Current Word we are parsing", mot)
                         # found emails
                         if re.match(email_pattern, mot):
-                            founds_infos["emails"].extend(mot)
+                            print("------------------------------------------------")
+                            print("Ce email a passé les filtres", mot)
+                            print("------------------------------------------------")
+                            founds_infos["email"].append(mot)
                         if re.match(phone_pattern, mot):
-                            founds_infos["phone"].extend(mot)
+                            founds_infos["phone"].append(mot)
                     print("facebook found infos", founds_infos)
                 #Close and return
                 await browser.close()

@@ -55,9 +55,9 @@ def validate_company_name(name, email):
     username_similarity = isSimilar(company_name_normalized, email_username)
     if username_similarity < 0.55:
          domain_similarity = isSimilar(company_name_normalized, email_domain)
-         return tuple(email,domain_similarity)
+         return [email,domain_similarity]
 
-    return tuple(email,username_similarity)
+    return [email,username_similarity]
 
 
 
