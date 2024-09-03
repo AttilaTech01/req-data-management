@@ -39,18 +39,20 @@ async def get_facebook_info(company_name):
                 await page.wait_for_timeout(1000)
                 # Extract Facebook textbox content 
                 facebook_textbox = await page.locator(".x9f619.x1n2onr6.x1ja2u2z.x78zum5.x2lah0s.x1qughib.x1qjc9v5.xozqiw3.x1q0g3np.x1pi30zi.x1swvt13.xyamay9.xykv574.xbmpl8g.x4cne27.xifccgj").all_inner_texts()
-                print("this is fb textbox",facebook_textbox)
+                #print("this is fb textbox",facebook_textbox)
             # Extract the email with the regex
 
                 email_pattern = '[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
                 phone_pattern = '\(\d{3}\) \d{3}-\d{4}'
                 #company_emails = re.findall(email_pattern,page_content)
                 for text in facebook_textbox:
-                    found_emails = re.findall(email_pattern, text)
-                    print("This is found emails", found_emails)
-                    found_phone = re.findall(phone_pattern, text)
-                    founds_infos["emails"].extend(found_emails)
-                    founds_infos["phone"].extend(found_phone)
+                    mots = text.split()
+                    for mot in mots:
+                        # found emails
+                        if re.match(email_pattern, mot):
+                            founds_infos["emails"].extend(mot)
+                        if re.match(phone_pattern, mot):
+                            founds_infos["phone"].extend(mot)
                     print("facebook found infos", founds_infos)
                 #Close and return
                 await browser.close()

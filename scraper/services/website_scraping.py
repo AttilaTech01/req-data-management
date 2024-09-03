@@ -67,15 +67,16 @@ async def get_website_info(website):
                     await page.goto(website)
                    
                     website_text = await page.locator('div').all_inner_texts()
-                    print(website_text)
+                    #print(website_text)
                     email_pattern = '[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
                     phone_pattern = '\(\d{3}\) \d{3}-\d{4}'
                     for text in website_text:
-                        found_emails = re.findall(email_pattern, text)
-                        found_phone = re.findall(phone_pattern, text)
-                        founds_infos["emails"].extend(found_emails)
-                        founds_infos["phone"].extend(found_phone)
-
+                        mots = text.split()
+                        for mot in mots:
+                            if re.match(email_pattern, mot):
+                               founds_infos["emails"].extend(mot) 
+                            if re.match(phone_pattern, mot):
+                                 founds_infos["phone"].extend(mot)
                   
                     await browser.close()
                     return founds_infos
