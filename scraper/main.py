@@ -50,14 +50,15 @@ async def main():
         new_leads.email_verification(scraped_emails)
         #Verif Phone Numbers
         new_leads.phone_verification(scraped_phone)
-        #Verif
+        #Verif if any email is found if no changes email object value to "NULL"
         new_leads.leads_validation()
-        print("After Scraped")
-        print(new_leads.company_name, new_leads.telephone, new_leads.email)
-        # Make the phone number to the first phone found
-    #print("Total : ", total)
-    #print("Wins : ", found)
-   # print("Win % : ", found * 100 / total)
+        # Update the Database
+        update_database(new_leads)
+        if new_leads.email != "NULL":
+            found += 1
+    print("Total : ", total)
+    print("Wins : ", found)
+    print("Win % : ", found * 100 / total)
     return "End of the script"
 
 

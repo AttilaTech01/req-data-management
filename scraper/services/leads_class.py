@@ -26,7 +26,7 @@ class Leads:
                 self.treshold = email_result[1]
                 return 
             
-            #Creating a list of tuples to store the data of the 
+            #Input list of email then in validate it and retur a list of tuples of [email, trehsolg]
             emails_verfied = []
             for email in list_email:
                 email_result = validate_company_name(self.company_name, email)
@@ -34,12 +34,14 @@ class Leads:
                 if found_emails_formatting(email):
                     self.email= email
                     return
-                emails_verfied.extend(email_result)
+                emails_verfied.append(email_result)
 
             # Trouver le tuple avec le plus haut treshold
             max_email = None
             max_treshold = 0
+            print("This is emails_verified", emails_verfied)
             for verified_email in emails_verfied:
+                print("This is verified email",verified_email)
                 if verified_email[1] > max_treshold:
                     max_treshold = verified_email[1]
                     max_email = verified_email[0]

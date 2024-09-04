@@ -19,7 +19,7 @@ def get_leads_from_database():
 
 
 # Updating the database with found values
-def update_database(lead_id, email, treshold, telephone):
+def update_database(leads):
     mydb = mysql.connector.connect(
         host="localhost",
         user="root",
@@ -27,11 +27,11 @@ def update_database(lead_id, email, treshold, telephone):
         password="root",
         database="leads"
     )
-    rounded_treshold = round(treshold, 2)
+    rounded_treshold = round(leads.treshold, 2)
     
-    query =f"Update localisation set email = '{email}', treshold = {rounded_treshold}, telephone = '{telephone}'  where id= {lead_id};"
+    query =f'Update localisation set email = "{leads.email}", treshold = {rounded_treshold}, telephone = "{leads.telephone}", company_name = "{leads.company_name}"  where id= {leads.bd_id};'
     print("This the Query", query)
-    print(f"6. Updating database item {lead_id} with : {email} - {rounded_treshold} - {telephone}")
+    print(f"6. Updating database item {leads.bd_id} with : {leads.email} - {rounded_treshold} - {leads.telephone} - {leads.company_name}")
     mycursor = mydb.cursor()
     mycursor.execute(query)
     
