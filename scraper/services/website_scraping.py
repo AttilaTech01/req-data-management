@@ -73,7 +73,7 @@ async def get_website_info(website):
                     for text in website_text:
                         mots = text.split()
                         for mot in mots:
-                            print("This is the Current Word we are parsing", mot)
+                            #print("This is the Current Word we are parsing", mot)
                             if re.match(email_pattern, mot):
                                founds_infos["email"].append(mot) 
                             if re.match(phone_pattern, mot):

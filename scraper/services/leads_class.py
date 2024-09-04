@@ -32,7 +32,8 @@ class Leads:
                 email_result = validate_company_name(self.company_name, email)
                 #Check if a keyword is found
                 if found_emails_formatting(email):
-                    self.email= email
+                    self.email= email_result[0]
+                    self.treshold = email_result[1]
                     return
                 emails_verfied.append(email_result)
 
@@ -45,7 +46,7 @@ class Leads:
                 if verified_email[1] > max_treshold:
                     max_treshold = verified_email[1]
                     max_email = verified_email[0]
-            
+            print("This is max treshold",max_treshold)
             self.email = max_email
             self.treshold = max_treshold
         return

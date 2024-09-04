@@ -48,7 +48,7 @@ async def get_facebook_info(company_name):
                 for text in facebook_textbox:
                     mots = text.split()
                     for mot in mots:
-                        print("This is the Current Word we are parsing", mot)
+                        #print("This is the Current Word we are parsing", mot)
                         # found emails
                         if re.match(email_pattern, mot):
                             print("------------------------------------------------")
