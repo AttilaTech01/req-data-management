@@ -52,7 +52,7 @@ async def main():
         new_leads.leads_validation()
         # Update the Database
         update_database(new_leads)
-        if new_leads.email != "NULL":
+        if new_leads.email != "INVALID":
             found += 1
     print("Total : ", total)
     print("Wins : ", found)
