@@ -1,10 +1,8 @@
 import asyncio
 from playwright.async_api import async_playwright
-import re
 from difflib import SequenceMatcher
-import mysql.connector
-from pydantic import BaseModel
-from typing import Tuple
+
+
 
 
 # Importing my modules
