@@ -1,7 +1,7 @@
 import asyncio
 from playwright.async_api import async_playwright
 from difflib import SequenceMatcher
-
+from datetime import datetime
 
 
 
@@ -48,13 +48,14 @@ async def main():
         new_leads.leads_validation()
         # Update the Database
         update_database(new_leads)
-        if new_leads.email != "INVALID":
+        if new_leads.email != "INVALID": 
             found += 1
-    print("Total : ", total)
-    print("Wins : ", found)
-    print("Win % : ", found * 100 / total)
-    return "End of the script"
+    file = open("log.txt", "a+")
+    file.write(f"\n---------------------------------------\nDate : {datetime.today().strftime('%Y-%m-%d %H:%M:%S')}\nTotal : {total} \nWins : {found} \nWin% : {found * 100 / total} \n---------------------------------------")
+    
 
+    return "End of the script"
+        
 
 # Run the script
 
