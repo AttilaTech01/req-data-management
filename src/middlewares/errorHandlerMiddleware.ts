@@ -4,7 +4,9 @@ import Bugsnag from '../BugSnag';
 const errorHandler = (err, req, res, next) => {
     //Send the error to the BugSnag
     const bugSnagMiddleware = Bugsnag.getPlugin('express');
-    Bugsnag.notify(err);
+    Bugsnag.notify(err, function (event) {
+        event.addMetadata('Extra', err.extraInfo);
+    });
 
     //Send to the clients the reponse
     if (err instanceof MondayError) {

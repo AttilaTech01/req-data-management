@@ -13,19 +13,19 @@ export function isMondayErrorResponse(data: any): boolean {
     return false;
 }
 
-export function throwMondayError(data: any): MondayError {
+export function findMondayErrorCode(data: any): number {
     switch (true) {
         case data.hasOwnProperty('error_code'): {
-            return new MondayError(data.error_message, 403);
+            return 403;
         }
         case data.hasOwnProperty('error_message'): {
-            return new MondayError(data.error_message, 500);
+            return 500;
         }
         case data.hasOwnProperty('errors'): {
-            return new MondayError(data.errors[0].message, 500);
+            return 500;
         }
         default: {
-            return new MondayError('New Monday Error', 500);
+            return 500;
         }
     }
 }

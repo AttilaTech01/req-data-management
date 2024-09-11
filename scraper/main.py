@@ -52,7 +52,7 @@ async def main():
             found += 1
     file = open("log.txt", "a+")
     file.write(f"\n---------------------------------------\nDate : {datetime.today().strftime('%Y-%m-%d %H:%M:%S')}\nTotal : {total} \nWins : {found} \nWin% : {found * 100 / total} \n---------------------------------------")
-    
+    file.close()
 
     return "End of the script"
         
