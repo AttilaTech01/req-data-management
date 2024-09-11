@@ -24,7 +24,7 @@ class MondayRepository {
                         configs.board_id
                     }, group_id: \"${configs.group_id}\", item_name: \"${
                         item.name
-                    }\", column_values: \"{ \\\"${configs.email_column_id}\\\":\\\"${
+                    }\", column_value: \"{ \\\"${configs.email_column_id}\\\":\\\"${
                         item.email + ' ' + item.email
                     }\\\", \\\"${configs.region_column_id}\\\":\\\"${item.mrc}\\\", \\\"${
                         configs.db_id_column_id
@@ -44,7 +44,8 @@ class MondayRepository {
 
             return true;
         } catch (error) {
-            throw new MondayError(error.message, findMondayErrorCode(error), {
+            const { message, statusCode } = findMondayErrorCode(error);
+            throw new MondayError(message, statusCode, {
                 itemID: item.id,
             });
         }
@@ -72,7 +73,8 @@ class MondayRepository {
 
             return response.data.data.items_page_by_column_values;
         } catch (error) {
-            throw findMondayErrorCode(error);
+            const { message, statusCode } = findMondayErrorCode(error);
+            throw new MondayError(message, statusCode);
         }
     }
 
@@ -100,7 +102,8 @@ class MondayRepository {
 
             return true;
         } catch (error) {
-            throw new MondayError(error.message, findMondayErrorCode(error));
+            const { message, statusCode } = findMondayErrorCode(error);
+            throw new MondayError(message, statusCode);
         }
     }
 
@@ -126,7 +129,8 @@ class MondayRepository {
 
             return response.data.data;
         } catch (error) {
-            throw new MondayError(error.message, findMondayErrorCode(error));
+            const { message, statusCode } = findMondayErrorCode(error);
+            throw new MondayError(message, statusCode);
         }
     }
 
@@ -153,7 +157,8 @@ class MondayRepository {
 
             return response.data.data.items_page_by_column_values;
         } catch (error) {
-            throw new MondayError(error.message, findMondayErrorCode(error));
+            const { message, statusCode } = findMondayErrorCode(error);
+            throw new MondayError(message, statusCode);
         }
     }
 
@@ -186,7 +191,8 @@ class MondayRepository {
 
             return true;
         } catch (error) {
-            throw new MondayError(error.message, findMondayErrorCode(error), {
+            const { message, statusCode } = findMondayErrorCode(error);
+            throw new MondayError(message, statusCode, {
                 itemID: item.id,
             });
         }
@@ -220,7 +226,8 @@ class MondayRepository {
 
             return response.data.data.items_page_by_column_values;
         } catch (error) {
-            throw new MondayError(error.message, findMondayErrorCode(error));
+            const { message, statusCode } = findMondayErrorCode(error);
+            throw new MondayError(message, statusCode);
         }
     }
 
@@ -248,7 +255,8 @@ class MondayRepository {
 
             return true;
         } catch (error) {
-            throw new MondayError(error.message, findMondayErrorCode(error), {
+            const { message, statusCode } = findMondayErrorCode(error);
+            throw new MondayError(message, statusCode, {
                 itemID: itemId,
             });
         }
