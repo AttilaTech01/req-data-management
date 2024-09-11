@@ -5,13 +5,10 @@ import re
 
 
 
-async def get_facebook_info(company_name):
+async def get_facebook_info(Scraper):
     async with async_playwright() as p:
         #Initiate Found infos object
-        founds_infos = {
-            "email" : [],
-            "phone":[]
-            }
+
         try: 
             
              # Create a new Facebook browser
@@ -20,7 +17,7 @@ async def get_facebook_info(company_name):
             context = await browser.new_context(storage_state="facebookcookie.json")
             page = await context.new_page()
 
-            await page.goto(f"https://www.google.com/search?q={company_name}")
+            await page.goto(f"https://www.google.com/search?q={Scraper.company_name}")
 
             # Waiting for google's search list adn looks if there is any facebook link
               
@@ -54,17 +51,19 @@ async def get_facebook_info(company_name):
                             print("------------------------------------------------")
                             print("Ce email a passé les filtres", mot)
                             print("------------------------------------------------")
-                            founds_infos["email"].append(mot)
+                            Scraper.email_list.append(mot)
+                            #founds_infos["email"].append(mot)
                         if re.match(phone_pattern, mot):
-                            founds_infos["phone"].append(mot)
-                    print("facebook found infos", founds_infos)
+                            Scraper.phone_list.append(mot)
+                           # founds_infos["phone"].append(mot)
+                    #print("facebook found infos", founds_infos)
                 #Close and return
                 await browser.close()
-                return founds_infos
+                return 
             
             # If there is no facebook links, close and return None
             await browser.close()
-            return founds_infos
+            return 
 
         except:
-             return founds_infos
+             return 
