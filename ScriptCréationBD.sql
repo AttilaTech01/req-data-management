@@ -5,7 +5,7 @@ use leads;
 Create Table mrc (
 
 mrc_id int NOT NULL,
-nom varchar(255),
+mrc_name varchar(255),
 
 constraint pk_mrc_id primary key(mrc_id)
 );
@@ -14,7 +14,7 @@ constraint pk_mrc_id primary key(mrc_id)
 Create table category (
 
 category_id int NOT NULL,
-nom varchar(255),
+category_name varchar(255),
 
 constraint pk_category_id primary key(category_id)
 
@@ -26,38 +26,15 @@ neq int,
 secteur varchar(255),
 adresse varchar(255),
 ville 	varchar(255),
-téléphone int NULL ,
-courriel varchar(255),
+telephone int NULL ,
+email varchar(255),
 treshold float,
-migration boolean DEFAULT FALSE,
-date_creation date,
-
-constraint pk_id primary key(id)
-);
-
-
-create table name (
-
-id int  auto_increment  NOT NULL,
-NEQ int,
-Nom varchar(255),
-
-constraint pk_ent_nom primary key(id)
-);
-
-
-
-
-
-Create table secteurs (
-
-id int auto_increment NOT NULL,
-secteur_name varchar(255),
 category_id int,
+date_creation date,
+company_name varchar(255),
 
-constraint fk_secteur_cat_id foreign key(category_id) references category(category_id),
-constraint pk_sec_id primary key(id)
-
+constraint pk_id primary key(id),
+constraint fk_localisation_category_id foreign key(category_id) references category(category_id)
 );
 
 
@@ -94,6 +71,10 @@ constraint pk_migration_id primary key(user_id,localisation_id)
 );
 
 
+
+-- Insertion de données
+
+
 INSERT INTO mrc Values (100, "Capitale-Nationale"),
 						(101, "Chaudière-Appalaches"),
                         (102, "Estrie"),
@@ -110,15 +91,6 @@ INSERT INTO mrc Values (100, "Capitale-Nationale"),
                         (113, "Gaspésie–Îles-de-la-Madeleine"),
                         (114, "Côte-Nord"),
                         (115, "Nord-du-Québec");
-
-
-
-
-
-
-
-
-
 
 INSERT INTO category VALUES
 (1, 'Construction'),
@@ -149,72 +121,7 @@ INSERT INTO category VALUES
 
 
 
-
--- Query de recherche
-
- Select localisation.id, localisation.neq, localisation.secteur, localisation.adresse, localisation.ville, localisation.category_id, localisation.mrc_id, mrc.nom, name.Nom, category.nom, monday.board_id
- from localisation
- inner JOIN category on  localisation.category_id = category.category_id
- Inner Join mrc on localisation.mrc_id = mrc.mrc_id
- Inner Join name on localisation.neq = name.NEQ
- Inner join monday on localisation.category_id = monday.category_id and localisation.mrc_id = monday.mrc_id;
- 
- 
- -- query pour avoir le category_id
- -- obtenir le catégory_id 
-Select s.category_id 
-from localisation l
-join secteurs s  on l.secteur = s.secteur_name;
- 
- 
- 
- 
- 
- -- Query supprimer les compagnies à chiffres
- 
- -- Delete les compagnies à chiffres
-set sql_safe_updates = 0;
-delete
-from name
-Where Nom regexp '^[0-9]{3}.';
-set sql_safe_updates = 1;
-
--- Main Query
-SELECT 
-    localisation.*,
-    category.nom,
-    mrc.nom,
-    name.Nom "Company_name"
-FROM 
-    localisation
-JOIN 
-    secteurs ON localisation.secteur = secteurs.secteur_name
-JOIN 
-    category ON secteurs.category_id = category.category_id
-JOIN
-	ville on localisation.ville = ville.ville_name
-JOIN
-	mrc on ville.mrc_id = mrc.mrc_id
-Join name on localisation.neq = name.NEQ   
-WHERE category.category_id = 1 and mrc.mrc_id = 101;
-
-
-SELECT 
-    localisation.*,
-    category.nom,
-    mrc.nom
-FROM 
-    localisation
-JOIN 
-    secteurs ON localisation.secteur = secteurs.secteur_name
-JOIN 
-    category ON secteurs.category_id = category.category_id
-JOIN
-	ville on localisation.ville = ville.ville_name
-JOIN
-	mrc on ville.mrc_id = mrc.mrc_id
-Join name on localisation.neq = name.NEQ
-WHERE category.category_id = 1 and mrc.mrc_id = 101 and localisation.treshold < 0.5;
+Select DISTINCT l.telephone, l.email, l.treshold, l.company_name, l.id from localisation l JOIN ville v on l.ville = v.ville_name JOIN mrc on v.mrc_id = mrc.mrc_id where l.email is NULL and l.company_name is not NULL and mrc.mrc_id in (100,101,107,108,111,112) LIMIT 300
 
 
 
@@ -229,44 +136,6 @@ WHERE category.category_id = 1 and mrc.mrc_id = 101 and localisation.treshold < 
 
 
 
-
-
-INSERT INTO secteurs (secteur_name, category_id) VALUES
-('Travaux d\'électricité', 1),
-('Entrepreneur en construction', 1),
-('Travaux de plomberie', 1),
-('Électricité', 1),
-('Rénovation de maison', 1),
-('Déneigement', 1),
-('Consultant en construction', 1),
-('Rénovation et l\'entretien résidentiel et commercial', 1),
-('Excavation', 1),
-('Construction immobilières', 1),
-('Entrepreneur en construction et gestion d\'immeubles résidentiels', 1),
-('Installation de gouttières en aluminium', 1),
-('Carreleurs', 1),
-('Consultation et services techniques en construction', 1),
-('Plomberie', 1),
-('Reconditionnement de fenêtres', 1),
-('Construction et promotion de maisons neuves', 1),
-('Constructions', 1),
-('Travaux de coffrage industriels & commerciaux', 1),
-('Fabrication de portes d\'acier et de fenêtres en upvc', 1),
-('Construction et rénovation commerciale', 1),
-('Travaux d\'ingénierie', 1),
-('Traçage de lignes sur pavé', 1),
-('Installation et vente de systèmes d\'alarme', 1),
-('Entrepreneur général en construction', 1),
-('Rénovation résidentielle et commerciale', 1),
-('Construction d\'immeubles résidentiels et commerciaux', 1),
-('Construction de maisons pré-fab', 1),
-('Travaux paysagers', 1),
-('Exploitation d\'une entreprise dans le domaine de la construction', 1),
-('Construction résidentielle', 1),
-('Lever les bâtisses', 1),
-('Services de construction', 1),
-('Entrepreneur général et spécialisé', 1),
-('Soudure haute-pression', 1);
 
 
 
