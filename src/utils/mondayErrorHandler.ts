@@ -13,19 +13,31 @@ export function isMondayErrorResponse(data: any): boolean {
     return false;
 }
 
-export function throwMondayError(data: any): MondayError {
+export function findMondayErrorCode(data: any): any {
     switch (true) {
         case data.hasOwnProperty('error_code'): {
-            return new MondayError(data.error_message, 403);
+            //return new MondayError(data.error_message, 403);
+            const message = data.error_message;
+            const statusCode = 403;
+            return { message, statusCode };
         }
         case data.hasOwnProperty('error_message'): {
-            return new MondayError(data.error_message, 500);
+            //return new MondayError(data.error_message, 500);
+            const message = data.error_message;
+            const statusCode = 500;
+            return { message, statusCode };
         }
         case data.hasOwnProperty('errors'): {
-            return new MondayError(data.errors[0].message, 500);
+            //return new MondayError(data.errors[0].message, 500)
+            const message = data.errors[0].message;
+            const statusCode = 500;
+            return { message, statusCode };
         }
         default: {
-            return new MondayError('New Monday Error', 500);
+            //return new MondayError('New Monday Error', 500)
+            const message = 'New Monday Error';
+            const statusCode = 500;
+            return { message, statusCode };
         }
     }
 }

@@ -5,22 +5,19 @@ import re
 
 
 
-async def get_facebook_info(company_name):
+async def get_facebook_info(Scraper):
     async with async_playwright() as p:
         #Initiate Found infos object
-        founds_infos = {
-            "email" : [],
-            "phone":[]
-            }
+
         try: 
             
              # Create a new Facebook browser
             browser = await p.chromium.launch(headless=False)  # Set headless=True for headless mode
             # BUG - ne semble même pas lancer le browser
-            context = await browser.new_context(storage_state="facebookcookie.json")
-            page = await context.new_page()
-
-            await page.goto(f"https://www.google.com/search?q={company_name}")
+           # context = await browser.new_context(storage_state="facebookcookie.json")
+            #page = await context.new_page()
+            page = await browser.new_page()
+            await page.goto(f"https://www.google.com/search?q={Scraper.company_name}")
 
             # Waiting for google's search list adn looks if there is any facebook link
               
@@ -37,6 +34,11 @@ async def get_facebook_info(company_name):
                 # Wait for the Facebook page to load
                 await page.wait_for_selector('body')
                 await page.wait_for_timeout(1000)
+                
+                # Try to click on the x button
+                await page.get_by_role("button", name= "Fermer").click()
+                await page.wait_for_timeout(5000)
+                
                 # Extract Facebook textbox content 
                 facebook_textbox = await page.locator(".x9f619.x1n2onr6.x1ja2u2z.x78zum5.x2lah0s.x1qughib.x1qjc9v5.xozqiw3.x1q0g3np.x1pi30zi.x1swvt13.xyamay9.xykv574.xbmpl8g.x4cne27.xifccgj").all_inner_texts()
                 #print("this is fb textbox",facebook_textbox)
@@ -54,17 +56,19 @@ async def get_facebook_info(company_name):
                             print("------------------------------------------------")
                             print("Ce email a passé les filtres", mot)
                             print("------------------------------------------------")
-                            founds_infos["email"].append(mot)
+                            Scraper.email_list.append(mot)
+                            #founds_infos["email"].append(mot)
                         if re.match(phone_pattern, mot):
-                            founds_infos["phone"].append(mot)
-                    print("facebook found infos", founds_infos)
+                            Scraper.phone_list.append(mot)
+                           # founds_infos["phone"].append(mot)
+                    #print("facebook found infos", founds_infos)
                 #Close and return
                 await browser.close()
-                return founds_infos
+                return 
             
             # If there is no facebook links, close and return None
             await browser.close()
-            return founds_infos
+            return 
 
         except:
-             return founds_infos
+             return 

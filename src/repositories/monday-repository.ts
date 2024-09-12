@@ -1,10 +1,10 @@
 import axios from 'axios';
-import { isMondayErrorResponse, throwMondayError } from '../utils/mondayErrorHandler';
+import { isMondayErrorResponse, findMondayErrorCode } from '../utils/mondayErrorHandler';
 import { Business } from '../models/business';
 import { getItemsPageByColumnValuesResponse } from '../models/getItemsPageByColumnValuesResponse';
 import { getItemsFromGroupResponse } from '../models/getItemsFromGroupResponse';
 import { MondayConfig } from '../models/mondayConfig';
-
+import { MondayError } from '../models/customErrors';
 class MondayRepository {
     // LEADS
     static async createMondayItem(
@@ -24,7 +24,7 @@ class MondayRepository {
                         configs.board_id
                     }, group_id: \"${configs.group_id}\", item_name: \"${
                         item.name
-                    }\", column_values: \"{ \\\"${configs.email_column_id}\\\":\\\"${
+                    }\", column_value: \"{ \\\"${configs.email_column_id}\\\":\\\"${
                         item.email + ' ' + item.email
                     }\\\", \\\"${configs.region_column_id}\\\":\\\"${item.mrc}\\\", \\\"${
                         configs.db_id_column_id
@@ -44,7 +44,10 @@ class MondayRepository {
 
             return true;
         } catch (error) {
-            throw throwMondayError(error);
+            const { message, statusCode } = findMondayErrorCode(error);
+            throw new MondayError(message, statusCode, {
+                itemID: item.id,
+            });
         }
     }
 
@@ -70,7 +73,8 @@ class MondayRepository {
 
             return response.data.data.items_page_by_column_values;
         } catch (error) {
-            throw throwMondayError(error);
+            const { message, statusCode } = findMondayErrorCode(error);
+            throw new MondayError(message, statusCode);
         }
     }
 
@@ -98,7 +102,8 @@ class MondayRepository {
 
             return true;
         } catch (error) {
-            throw throwMondayError(error);
+            const { message, statusCode } = findMondayErrorCode(error);
+            throw new MondayError(message, statusCode);
         }
     }
 
@@ -124,7 +129,8 @@ class MondayRepository {
 
             return response.data.data;
         } catch (error) {
-            throw throwMondayError(error);
+            const { message, statusCode } = findMondayErrorCode(error);
+            throw new MondayError(message, statusCode);
         }
     }
 
@@ -151,7 +157,8 @@ class MondayRepository {
 
             return response.data.data.items_page_by_column_values;
         } catch (error) {
-            throw throwMondayError(error);
+            const { message, statusCode } = findMondayErrorCode(error);
+            throw new MondayError(message, statusCode);
         }
     }
 
@@ -184,7 +191,10 @@ class MondayRepository {
 
             return true;
         } catch (error) {
-            throw throwMondayError(error);
+            const { message, statusCode } = findMondayErrorCode(error);
+            throw new MondayError(message, statusCode, {
+                itemID: item.id,
+            });
         }
     }
 
@@ -216,7 +226,8 @@ class MondayRepository {
 
             return response.data.data.items_page_by_column_values;
         } catch (error) {
-            throw throwMondayError(error);
+            const { message, statusCode } = findMondayErrorCode(error);
+            throw new MondayError(message, statusCode);
         }
     }
 
@@ -244,7 +255,10 @@ class MondayRepository {
 
             return true;
         } catch (error) {
-            throw throwMondayError(error);
+            const { message, statusCode } = findMondayErrorCode(error);
+            throw new MondayError(message, statusCode, {
+                itemID: itemId,
+            });
         }
     }
 }

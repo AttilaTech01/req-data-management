@@ -5,12 +5,12 @@ from urllib.parse import urlparse
 
 
 
-async def get_website_url(company_name):
+async def get_website_url(Scraper):
            async with async_playwright() as p:
                 try:
                     browser = await p.chromium.launch(headless=False)  # Set headless=True for headless mode
                     page =  await browser.new_page()
-                    await page.goto(f"https://www.google.com/search?q={company_name}")
+                    await page.goto(f"https://www.google.com/search?q={Scraper.company_name}")
 
                   #Looks for Google Profile
                     button = await page.get_by_role("button", name="Site Web").is_visible()
@@ -45,26 +45,26 @@ async def get_website_url(company_name):
                     url = urlparse(list_of_links[0])
                     
                     url = url.hostname.split("›")
-
-                    return "https://"+url[0]
+                    Scraper.website_url = "https://"+url[0]
+                    return
                 except:
-                     return None
+                     return 
                 
 
 
-async def get_website_info(website):
+async def get_website_info(Scraper):
            async with async_playwright() as p:
-                founds_infos = {"email": [], "phone":[]} 
+                
                 #If no url is provided
-                if not website:
-                     return founds_infos
+                if not Scraper.website_url:
+                     return 
                
                 try:
                     browser = await p.chromium.launch(headless=False)  # Set headless=True for headless mode
                     page =  await browser.new_page()
 
                     # Go to website and wait for page to load main page
-                    await page.goto(website)
+                    await page.goto(Scraper.website_url)
                    
                     website_text = await page.locator('div').all_inner_texts()
                     #print(website_text)
@@ -75,13 +75,14 @@ async def get_website_info(website):
                         for mot in mots:
                             #print("This is the Current Word we are parsing", mot)
                             if re.match(email_pattern, mot):
-                               founds_infos["email"].append(mot) 
+                               #founds_infos["email"].append(mot)
+                               Scraper.email_list.append(mot) 
                             if re.match(phone_pattern, mot):
-                                 founds_infos["phone"].append(mot)
+                                #founds_infos["phone"].append(mot)
+                                Scraper.phone_list.append(mot)
                   
                     await browser.close()
-                    return founds_infos
+                    return
                 except:
                     print("There was an error")
-                    await browser.close()
-                    return founds_infos
+                    return
