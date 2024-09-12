@@ -47,7 +47,7 @@ async def main():
         #Verif if any email is found if no changes email object value to "NULL"
         new_leads.leads_validation()
         # Update the Database
-        update_database(new_leads)
+       # update_database(new_leads)
         if new_leads.email != "INVALID": 
             found += 1
     file = open("log.txt", "a+")
