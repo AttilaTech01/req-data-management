@@ -24,30 +24,34 @@ async def main():
     # Each lead is an array of values: telephone, email, treshold, company_name, id
     for idx, lead in enumerate(leads):
         print(f"1. Lead #{idx + 1} in process : {lead}")
-        #Creating the Objects
+
+        #Creating the Objects Leads
         new_leads = Leads(lead[3],lead[4])
+
         #Formating The Name
         new_leads.format_name()
 
         #Initialize the Scraper
-
         scraper =  Scraper(new_leads.company_name)
         
         # Scrape Facebook
         await scraper.facebook_scraping()
 
         # Scrape the Website
-
         await scraper.website_scraping()
-        # verified which emails to take¸
 
+        # verified which emails to take¸
         new_leads.email_verification(scraper.email_list)
+
         #Verif Phone Numbers
         new_leads.phone_verification(scraper.phone_list)
+
         #Verif if any email is found if no changes email object value to "NULL"
         new_leads.leads_validation()
+
         # Update the Database
-       # update_database(new_leads)
+        update_database(new_leads)
+
         if new_leads.email != "INVALID": 
             found += 1
     file = open("log.txt", "a+")
