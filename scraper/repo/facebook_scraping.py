@@ -10,7 +10,6 @@ async def get_facebook_info(Scraper):
         try:  
             # Create a new Facebook browser
             browser = await p.chromium.launch(headless=False)  # Set headless=True for headless mode
-
             page = await browser.new_page()
             await page.goto(f"https://www.google.com/search?q={Scraper.company_name}")
 
@@ -19,10 +18,10 @@ async def get_facebook_info(Scraper):
             facebook_pattern = re.compile(r"https:\/\/www\.facebook\.com\/[a-zA-Z0-9\.\-\/_]+")
             facebook_links = facebook_pattern.findall(page_content)
 
-            # If facebook links are found
+            #If facebook links are found
             if facebook_links:
-                # Take the first match if multiple found
-                facebook_link = facebook_links[0]  
+                facebook_link = facebook_links[0]  # Take the first match if multiple found
+
                 # Go to the Facebook page
                 await page.goto(facebook_link)
                 

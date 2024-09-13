@@ -53,6 +53,7 @@ async def get_website_info(Scraper):
                      return 
                
                 try:
+                    #Initialisation du browser
                     browser = await p.chromium.launch(headless=False)  # Set headless=True for headless mode
                     page =  await browser.new_page()
 
@@ -63,11 +64,14 @@ async def get_website_info(Scraper):
                     website_text = await page.locator('div').all_inner_texts()
                     email_pattern = '[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
                     phone_pattern = '\(\d{3}\) \d{3}-\d{4}'
+
+                    # Loop dans les mots de la page 
                     for text in website_text:
                         mots = text.split()
                         for mot in mots:
                             if re.match(email_pattern, mot):
                                Scraper.email_list.append(mot) 
+
                             if re.match(phone_pattern, mot):
                                 Scraper.phone_list.append(mot)
                   
