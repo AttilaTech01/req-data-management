@@ -1,3 +1,7 @@
 from datetime import datetime
 
-print(f"\n---------------------------------------\nDate : {datetime.today().strftime('%Y-%m-%d %H:%M:%S')}\nTotal : {100} \nWins : {50} \nWin% : {50 * 100 / 100}")
+no_regional = "(418)"
+phone = "380-3974"
+
+
+print(str(no_regional + " " + phone))

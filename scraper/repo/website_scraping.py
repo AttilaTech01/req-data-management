@@ -14,6 +14,7 @@ async def get_website_url(Scraper):
 
                   #Looks for Google Profile
                     button = await page.get_by_role("button", name="Site Web").is_visible()
+                    
                     if button:
                         await page.get_by_role("button", name="Site Web").click(timeout=2000)
                         pageUrl = page.url
@@ -26,8 +27,6 @@ async def get_website_url(Scraper):
                     #Return un array des liens de la page
                     list_of_links = await page.locator('.byrV5b').all_inner_texts()
                     
-                    #print("Website URL")
-                    #print(list_of_links)
                     # List of website url that we want to skip
                     website_to_skip_regex = [r"https://ca.linkedin.com/", r"https://www.pagesjaunes.ca/", r"https://www.yellowpages.ca/", r"https://www.fr.canada411.ca/"]
                     
@@ -60,25 +59,26 @@ async def get_website_info(Scraper):
                      return 
                
                 try:
+                    #Initialisation du browser
                     browser = await p.chromium.launch(headless=False)  # Set headless=True for headless mode
                     page =  await browser.new_page()
 
                     # Go to website and wait for page to load main page
                     await page.goto(Scraper.website_url)
-                   
                     website_text = await page.locator('div').all_inner_texts()
-                    #print(website_text)
+
+                    #Crréation des pattern regex
                     email_pattern = '[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
                     phone_pattern = '\(\d{3}\) \d{3}-\d{4}'
+
+                    # Loop dans les mots de la page 
                     for text in website_text:
                         mots = text.split()
                         for mot in mots:
-                            #print("This is the Current Word we are parsing", mot)
                             if re.match(email_pattern, mot):
-                               #founds_infos["email"].append(mot)
                                Scraper.email_list.append(mot) 
+
                             if re.match(phone_pattern, mot):
-                                #founds_infos["phone"].append(mot)
                                 Scraper.phone_list.append(mot)
                   
                     await browser.close()
