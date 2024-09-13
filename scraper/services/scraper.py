@@ -8,11 +8,10 @@ class Scraper:
         self.website_url = None
 
     async def website_scraping(self):
-        # GET the Website URL
+        # Get the Website URL
         await get_website_url(self) 
-        # Parse the WebsiteW
+        # Parse the Website
         await get_website_info(self)
-
         return
     
     async def facebook_scraping(self):

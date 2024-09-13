@@ -18,9 +18,8 @@ class Leads:
 
     def email_verification(self, list_email):
         if len(list_email) > 0:
-            # if on email return only one email
+            # if only one email, return it
             if len(list_email) == 1:
-                #IF one result
                 email_result = validate_company_name(self.company_name, list_email[0])
                 self.email = email_result[0]
                 self.treshold = email_result[1]
@@ -42,7 +41,6 @@ class Leads:
             max_treshold = 0
             print("This is emails_verified", emails_verfied)
             for verified_email in emails_verfied:
-                print("This is verified email",verified_email)
                 if verified_email[1] > max_treshold:
                     max_treshold = verified_email[1]
                     max_email = verified_email[0]

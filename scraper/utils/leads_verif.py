@@ -3,19 +3,15 @@ from difflib import SequenceMatcher
 
 # Creating the function to sequalize two strings
 def isSimilar(a, b):
-    print(f'COMPARING : {a} and {b}')
     result = SequenceMatcher(None, a, b).ratio()
-    print(f'RESULT : {result}')
     return result
 
 # Formats the email if it's an array or null, Check if one of the emails contains keyword and return the emails with the keyword
 def found_emails_formatting(found_emails):
-    KEYWORDS = ["info", "admin", "sales", "ventes", "contact"]
-    print('5. Found emails: ', found_emails)    
+    KEYWORDS = ["info", "admin", "sales", "ventes", "contact"] 
            
     #Look if one of the email contains the keywords info or admin or sales or contact
-    
-    split_email =  found_emails.split("@")
+    split_email = found_emails.split("@")
     if any(substring in split_email[0] for substring in KEYWORDS):
         return True
     if any(substring in split_email[1] for substring in KEYWORDS):

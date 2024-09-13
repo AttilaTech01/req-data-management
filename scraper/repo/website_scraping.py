@@ -12,22 +12,19 @@ async def get_website_url(Scraper):
                     page =  await browser.new_page()
                     await page.goto(f"https://www.google.com/search?q={Scraper.company_name}")
 
-                  #Looks for Google Profile
+                    # Look for Google Profile
                     button = await page.get_by_role("button", name="Site Web").is_visible()
+                    
                     if button:
                         await page.get_by_role("button", name="Site Web").click(timeout=2000)
                         pageUrl = page.url
                         return pageUrl
 
                     # Extraire toutes les URLs des résultats de recherche
-                    
                     await page.wait_for_selector('h3')
-                    
-                    #Return un array des liens de la page
+                    # Return un array des liens de la page
                     list_of_links = await page.locator('.byrV5b').all_inner_texts()
                     
-                    #print("Website URL")
-                    #print(list_of_links)
                     # List of website url that we want to skip
                     website_to_skip_regex = [r"https://ca.linkedin.com/", r"https://www.pagesjaunes.ca/", r"https://www.yellowpages.ca/", r"https://www.fr.canada411.ca/"]
                     
@@ -36,16 +33,13 @@ async def get_website_url(Scraper):
                             if re.search(regex, link):
                                 list_of_links.remove(link)
                     
-
-                    
                     await browser.close()
-                    #print(list_of_links)
                     
-                    # Format the string to only gets the url
+                    # Format the string to only get the url
                     url = urlparse(list_of_links[0])
-                    
                     url = url.hostname.split("›")
                     Scraper.website_url = "https://"+url[0]
+                    print(f"3. Chosen URL : {Scraper.website_url}")
                     return
                 except:
                      return 
@@ -54,7 +48,6 @@ async def get_website_url(Scraper):
 
 async def get_website_info(Scraper):
            async with async_playwright() as p:
-                
                 #If no url is provided
                 if not Scraper.website_url:
                      return 
@@ -66,21 +59,19 @@ async def get_website_info(Scraper):
                     # Go to website and wait for page to load main page
                     await page.goto(Scraper.website_url)
                    
+                    # Extract and parse website text content
                     website_text = await page.locator('div').all_inner_texts()
-                    #print(website_text)
                     email_pattern = '[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
                     phone_pattern = '\(\d{3}\) \d{3}-\d{4}'
                     for text in website_text:
                         mots = text.split()
                         for mot in mots:
-                            #print("This is the Current Word we are parsing", mot)
                             if re.match(email_pattern, mot):
-                               #founds_infos["email"].append(mot)
                                Scraper.email_list.append(mot) 
                             if re.match(phone_pattern, mot):
-                                #founds_infos["phone"].append(mot)
                                 Scraper.phone_list.append(mot)
                   
+                    print(f"4. Website found infos : {Scraper.email_list}, {Scraper.phone_list}")
                     await browser.close()
                     return
                 except:

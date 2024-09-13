@@ -30,26 +30,26 @@ async def main():
         new_leads.format_name()
 
         #Initialize the Scraper
-
         scraper =  Scraper(new_leads.company_name)
         
         # Scrape Facebook
         await scraper.facebook_scraping()
 
         # Scrape the Website
-
         await scraper.website_scraping()
-        # verified which emails to take¸
 
+        # Verify which emails to take
         new_leads.email_verification(scraper.email_list)
-        #Verif Phone Numbers
+        # Verify phone numbers
         new_leads.phone_verification(scraper.phone_list)
-        #Verif if any email is found if no changes email object value to "NULL"
+        # Verif if any email is found if no changes email object value to "NULL"
         new_leads.leads_validation()
+        
         # Update the Database
-       # update_database(new_leads)
+        update_database(new_leads)
         if new_leads.email != "INVALID": 
             found += 1
+
     file = open("log.txt", "a+")
     file.write(f"\n---------------------------------------\nDate : {datetime.today().strftime('%Y-%m-%d %H:%M:%S')}\nTotal : {total} \nWins : {found} \nWin% : {found * 100 / total} \n---------------------------------------")
     file.close()

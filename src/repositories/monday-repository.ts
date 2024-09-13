@@ -24,7 +24,7 @@ class MondayRepository {
                         configs.board_id
                     }, group_id: \"${configs.group_id}\", item_name: \"${
                         item.name
-                    }\", column_value: \"{ \\\"${configs.email_column_id}\\\":\\\"${
+                    }\", column_values: \"{ \\\"${configs.email_column_id}\\\":\\\"${
                         item.email + ' ' + item.email
                     }\\\", \\\"${configs.region_column_id}\\\":\\\"${item.mrc}\\\", \\\"${
                         configs.db_id_column_id
