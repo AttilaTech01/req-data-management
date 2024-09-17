@@ -61,3 +61,13 @@ export async function UpdateVerifiedLeads(req, res, next): Promise<void> {
         next(err);
     }
 }
+
+export async function CreateDbLeads(req, res, next): Promise<void> {
+    try {
+        const data = await reqService.CreateDatabaseItems(req);
+        return res.status(200).send({ message: 'verified leads updated successfully' });
+    } catch (err) {
+        console.error(err);
+        next(err);
+    }
+}

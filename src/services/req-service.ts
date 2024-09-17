@@ -11,6 +11,7 @@ import { MondayConfig } from '../models/mondayConfig';
 import mondayConfigService from './monday-config-service';
 import { MondayItem } from '../models/mondayItem';
 import { Duplicate } from '../models/duplicate';
+import { CreateItem } from '../models/createDatabaseItems';
 
 class ReqService {
     // LEADS
@@ -294,6 +295,19 @@ class ReqService {
                 );
             }
 
+            return true;
+        } catch (error) {
+            console.log(error);
+            throw error;
+        }
+    }
+
+    static async CreateDatabaseItems(req: Request): Promise<any> {
+        try {
+            const leads: CreateItem = req.body;
+            console.log(leads);
+            const query = `Insert into localisation (company_name, ville, email, telephone, secteur) value ("${leads.companyName}", "${leads.ville}", "${leads.email}", "${leads.telephone}", "${leads.secteur}")`;
+            await reqRepository.customQueryDB(query);
             return true;
         } catch (error) {
             console.log(error);

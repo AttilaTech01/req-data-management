@@ -5,6 +5,7 @@ import {
     getUnVerifiedLeads,
     UpdateVerifiedLeads,
     updateLeadsCategorisation as updateLeadsCategorisation,
+    CreateDbLeads,
 } from '../controllers/controller';
 
 const router = express();
@@ -39,6 +40,9 @@ router.get('/get-unverified-leads', (req, res, next) => {
 
 router.patch('/update-verified-leads', (req, res, next) => {
     UpdateVerifiedLeads(req, res, next);
+});
+router.post('/create-item', (req, res, next) => {
+    CreateDbLeads(req, res, next);
 });
 
 // FUNCTIONS
