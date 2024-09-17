@@ -1,5 +1,7 @@
 import reqService from '../services/req-service';
 import { Duplicate } from '../models/duplicate';
+import Joi from 'joi';
+import { createDbItemReq } from '../models/createDatabaseItems';
 
 // LEADS
 export async function getAllItems(req, res, next): Promise<void> {
@@ -64,8 +66,12 @@ export async function UpdateVerifiedLeads(req, res, next): Promise<void> {
 
 export async function CreateDbLeads(req, res, next): Promise<void> {
     try {
+        const { error } = createDbItemReq.validate(req.body);
+        if (error) {
+            return res.status(400).json({ error: error.details[0].message });
+        }
         const data = await reqService.CreateDatabaseItems(req);
-        return res.status(200).send({ message: 'verified leads updated successfully' });
+        return res.status(200).send({ message: 'The items was created in the DB' });
     } catch (err) {
         console.error(err);
         next(err);

@@ -306,7 +306,11 @@ class ReqService {
         try {
             const leads: CreateItem = req.body;
             console.log(leads);
-            const query = `Insert into localisation (company_name, ville, email, telephone, secteur) value ("${leads.companyName}", "${leads.ville}", "${leads.email}", "${leads.telephone}", "${leads.secteur}")`;
+            const query = `Insert into localisation (company_name, ville, email, telephone, secteur) value ("${
+                leads.companyName
+            }", "${leads.ville}", "${leads.email || 'NULL'}", "${
+                leads.telephone || 'NULL'
+            }", "${leads.secteur || 'NULL'}")`;
             await reqRepository.customQueryDB(query);
             return true;
         } catch (error) {
