@@ -9,8 +9,8 @@ def get_leads_from_database():
         database="leads"
     )
     
-    #query = 'Select DISTINCT l.telephone, l.email, l.treshold, l.company_name, l.id from localisation l JOIN ville v on l.ville = v.ville_name JOIN mrc on v.mrc_id = mrc.mrc_id where l.email is NULL and l.company_name is not NULL and mrc.mrc_id in (100,101,107,108,111,112) LIMIT 50'
-    query = 'Select DISTINCT l.telephone, l.email, l.treshold, l.company_name, l.id from localisation l JOIN ville v on l.ville = v.ville_name JOIN mrc on v.mrc_id = mrc.mrc_id where l.email is NULL and l.company_name is not NULL  LIMIT 50'
+    query = 'Select DISTINCT l.telephone, l.email, l.treshold, l.company_name, l.id from localisation l JOIN ville v on l.ville = v.ville_name JOIN mrc on v.mrc_id = mrc.mrc_id where l.email is NULL and l.company_name is not NULL and mrc.mrc_id in (100,101,107,108,111,112) LIMIT 50'
+    #query = 'Select DISTINCT l.telephone, l.email, l.treshold, l.company_name, l.id from localisation l JOIN ville v on l.ville = v.ville_name JOIN mrc on v.mrc_id = mrc.mrc_id where l.email is NULL and l.company_name is not NULL  LIMIT 50'
     mycursor = mydb.cursor()
     mycursor.execute(query)
     rows= mycursor.fetchall()

@@ -50,7 +50,6 @@ MONDAY_ACCESS_TOKEN={insert your monday.com access token here}
 | Paramètre | Type | Obligatoire | Description |
 |-----------|--------|-------------|--------------------------------------------------------------|
 | user | string | Oui | ID utilisateur |
-| category | int | Non | ID de la catégorie d'entreprise à ajouter à votre CRM |
 | mrc | int | Non | ID de la MRC à ajouter à votre CRM |
 | limit | int | Non | Limite des leads à ajouter à votre CRM (par défaut à 50) |
 

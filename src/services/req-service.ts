@@ -11,45 +11,41 @@ import { MondayConfig } from '../models/mondayConfig';
 import mondayConfigService from './monday-config-service';
 import { MondayItem } from '../models/mondayItem';
 import { Duplicate } from '../models/duplicate';
+import { Business } from '../models/business';
 
 class ReqService {
     // LEADS
-    static async getAllItems(req: Request): Promise<boolean> {
+    static async getAllItems(req: Request): Promise<Business[]> {
         try {
-            const { category, mrc, limit, user } = req.query;
+            const { mrc, limit, user } = req.query;
 
             // Getting monday config informations based on the user
             if (!user || typeof user !== 'string') {
-                return false;
+                throw new UserError('User must be specified');
             }
             const userId = mondayConfigService.GetUserDatabaseID(user);
 
             // Creating the Query
-            let queryStr = `SELECT DISTINCT l.date_creation, l.email 'email' , l.id 'id_localisation', l.neq 'localisation_neq', l.secteur, l.adresse, l.ville,  mrc.mrc_name, n.company_name FROM localisation l LEFT JOIN migration m ON l.id = m.localisation_id and m.user_id = ${userId} JOIN ville v on l.ville = v.ville_name JOIN mrc on v.mrc_id = mrc.mrc_id JOIN name n on l.neq = n.neq WHERE m.localisation_id IS NULL and l.email is not null and l.email not in ('INVALID', 'VERIF') and l.treshold > 0.49
-`;
+            let queryStr = `SELECT DISTINCT l.date_creation, l.email 'email' , l.id 'id_localisation', l.neq 'localisation_neq', l.secteur, l.adresse, l.ville,  mrc.mrc_name, n.company_name FROM localisation l LEFT JOIN migration m ON l.id = m.localisation_id and m.user_id = ${userId} JOIN ville v on l.ville = v.ville_name JOIN mrc on v.mrc_id = mrc.mrc_id JOIN name n on l.neq = n.neq WHERE m.localisation_id IS NULL and l.email is not null and l.email not in ('INVALID', 'VERIF') and l.treshold > 0.49`;
 
             const userConfigInfos: MondayConfig = await mondayConfigService.GetUserConfig(
                 user
             );
-            // Delete it for to remove category
-            //if (category) {
-            // Add a case to the category name to an id
-            //// }
 
             if (mrc) {
-                // Add a case to the category name to an id
                 queryStr += ` and mrc.mrc_id = ${mrc}`;
             }
 
             queryStr += ` Limit ${limit || 50} `;
-
             queryStr += ';';
 
             // Sending the query
             const result = await reqRepository.getItems(queryStr);
 
+            let itemsInError: Business[] = [];
+
             if (result.length === 0) {
-                return true;
+                return itemsInError;
             }
 
             for (let index = 0; index < result.length; index++) {
@@ -63,10 +59,11 @@ class ReqService {
 
                     await reqRepository.customQueryDB(updateQuery);
                 } catch (error) {
-                    throw error;
+                    itemsInError.push(element);
+                    continue;
                 }
             }
-            return true;
+            return itemsInError;
         } catch (error) {
             throw error;
         }

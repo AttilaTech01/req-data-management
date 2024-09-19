@@ -1,11 +1,17 @@
-import reqService from '../services/req-service';
+import { Business } from '../models/business';
 import { Duplicate } from '../models/duplicate';
+import reqService from '../services/req-service';
 
 // LEADS
 export async function getAllItems(req, res, next): Promise<void> {
     try {
-        await reqService.getAllItems(req);
-        return res.status(200).send({ message: 'new leads fetched successfully' });
+        const response: Business[] = await reqService.getAllItems(req);
+
+        if (response.length <= 0) {
+            return res.status(200).send({ message: 'New leads fetched successfully' });
+        }
+
+        return res.status(200).send({ message: 'New leads fetched with some errors', data: response });
     } catch (err) {
         console.error(err);
         next(err);

@@ -119,7 +119,7 @@ class MondayRepository {
                     Authorization: process.env.MONDAY_ACCESS_TOKEN,
                 },
                 data: {
-                    query: `query { boards (ids: ${boardId}) { groups (ids: [\"${groupId}\"]) { title id items_page { items { id name column_values { id text }}}}}}`,
+                    query: `query { boards (ids: ${boardId}) { groups (ids: [\"${groupId}\"]) { title id items_page (limit: 100) { items { id name column_values { id text }}}}}}`,
                 },
             });
 
